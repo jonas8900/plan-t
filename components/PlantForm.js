@@ -49,7 +49,7 @@ export default function PlantForm() {
                 </SmallInputWrapper>
                 <InputContainer>
                     <StyledLabel htmlFor="plantprocurement">Beschaffung der Pflanze</StyledLabel>
-                    <StyledInput type="text" id="plantprocurement" name="plantprocurement" placeholder="z.B. Ableger" required></StyledInput>
+                    <StyledInput type="text" id="plantprocurement" name="plantprocurement" placeholder="z.B. Ableger"></StyledInput>
                 </InputContainer>
                 {/* <InputContainerFile>
                         <StyledFileUploadLabel htmlFor="picture">Bild hochladen</StyledFileUploadLabel>
@@ -58,7 +58,7 @@ export default function PlantForm() {
                 <HeadlineAddPlant>Intervalldaten</HeadlineAddPlant>
                 <InputContainer>
                     <StyledLabel htmlFor="wateringinterval">Gießintervall*</StyledLabel>
-                    <StyledInput placeholder="Anzahl gießen in Tagen z.B. 2 (jeden zweiten Tag)" type="text" id="wateringinterval" name="wateringinterval"/>
+                    <StyledInput placeholder="Anzahl gießen in Tagen z.B. 2 (jeden zweiten Tag)" type="text" id="wateringinterval" name="wateringinterval" required/>
                 </InputContainer>
                 <InputContainer>
                     <StyledLabel htmlFor="repotting">Letztes umtopfen*</StyledLabel>

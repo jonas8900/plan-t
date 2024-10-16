@@ -4,11 +4,11 @@ const { Schema } = mongoose;
 
 const plantSchema = new Schema({
   plantname: { type: String, required: true },
-  plantprocurement: { type: String, required: true }, 
+  plantprocurement: { type: String, required: false }, 
   planttype: { type: String, required: true },
   purchaseprice: { type: Number, required: false }, 
   repotting: { type: Date, required: true },
-  size: { type: Number, required: true }, 
+  size: { type: Number, required: false }, 
   wateringinterval: { type: Number, required: true }, 
 });
 

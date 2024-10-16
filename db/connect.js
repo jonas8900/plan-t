@@ -22,7 +22,7 @@ async function dbConnect() {
 
   if (!cached.promise) {
     const opts = {
-      dbName: DATABASE_NAME,
+      dbName: MONGODB_NAME,
       bufferCommands: false,
     };
 
