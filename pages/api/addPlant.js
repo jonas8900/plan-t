@@ -1,5 +1,6 @@
-import dbConnect from "@/db/connect";
-import Plant from "@/db/models/plant";
+import dbConnect from "../../db/connect";
+import Plant from "../../db/models/plant";
+
 
 export default async function handler(request, response) {
 	await dbConnect();
