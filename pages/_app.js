@@ -1,5 +1,8 @@
 import Head from "next/head";
 import GlobalStyle from "../styles";
+import { SWRConfig } from "swr/_internal";
+
+const fetcher = (url) => fetch(url).then((response) => response.json());
 
 export default function App({ Component, pageProps }) {
     return (
@@ -32,7 +35,9 @@ export default function App({ Component, pageProps }) {
                 <meta property="og:image" content="/icons/icon-512x512.png" />
             </Head>
             <GlobalStyle />
-            <Component {...pageProps}/>
+            <SWRConfig value={{ fetcher }}>
+                <Component {...pageProps}/>
+            </SWRConfig>
         </>
     );
 }

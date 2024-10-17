@@ -2,6 +2,7 @@ import Image from "next/image";
 import styled, { keyframes } from "styled-components";
 import MaterialIcon from "./MaterialIcon";
 import { useState } from "react";
+import Link from "next/link";
 
 export default function PageHeader() {
     const [isModalOpen, setModalOpen] = useState(false);
@@ -34,17 +35,15 @@ export default function PageHeader() {
                 <MaterialIconStyled>qr_code_2</MaterialIconStyled>
             </Anchor>
 
-            {/* "?" Icon for opening the modal */}
             <HelpIconContainer onClick={toggleModal}>
                 <MaterialIconStyledHelp>help_center</MaterialIconStyledHelp>
             </HelpIconContainer>
 
-            {/* Modal */}
             {isModalOpen && (
                 <ModalOverlay onClick={toggleModal}>
                     <ModalContent
                         className={isClosing ? "fade-out" : "fade-in"}
-                        onClick={(e) => e.stopPropagation()}
+                        onClick={(event) => event.stopPropagation()}
                     >
                         <CloseButton onClick={toggleModal}>
                             <MaterialIconStyledClose>close</MaterialIconStyledClose>
@@ -131,8 +130,7 @@ const MaterialIconStyledHelp = styled(MaterialIcon)`
     font-size: 2rem;
 `;
 
-
-const Anchor = styled.a`
+const Anchor = styled(Link)`
     position: absolute;
     right: 0;
     top: 0;
@@ -140,7 +138,6 @@ const Anchor = styled.a`
     text-decoration: none;
     color: var(--white-font-and-icon-color);
 `;
-
 
 const HelpIconContainer = styled.div`
     position: absolute;
@@ -159,7 +156,6 @@ const CloseButton = styled.button`
     border: none;
     cursor: pointer;
 `;
-
 
 const MaterialIconStyledClose = styled(MaterialIcon)`
     color: var(--dark-font-color);

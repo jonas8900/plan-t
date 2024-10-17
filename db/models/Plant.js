@@ -6,6 +6,7 @@ const plantSchema = new Schema({
   plantname: { type: String, required: true },
   plantprocurement: { type: String, required: false }, 
   planttype: { type: String, required: true },
+  file: { type: String, required: false },
   purchaseprice: { type: Number, required: false }, 
   repotting: { type: Date, required: true },
   size: { type: Number, required: false }, 

@@ -8,7 +8,6 @@ export default function PlantForm() {
         const formData = new FormData(event.target);
 		const data = Object.fromEntries(formData);
 
-
         const response = await fetch("/api/addPlant", {
 			method: "POST",
 			headers: {
@@ -22,7 +21,7 @@ export default function PlantForm() {
 		} else {
 			alert("Job wurde erfolgreich hinzugefügt");
 		}
-		event.target.reset();
+
     }
 
     return (
@@ -51,10 +50,10 @@ export default function PlantForm() {
                     <StyledLabel htmlFor="plantprocurement">Beschaffung der Pflanze</StyledLabel>
                     <StyledInput type="text" id="plantprocurement" name="plantprocurement" placeholder="z.B. Ableger"></StyledInput>
                 </InputContainer>
-                {/* <InputContainerFile>
+                <InputContainerFile>
                         <StyledFileUploadLabel htmlFor="picture">Bild hochladen</StyledFileUploadLabel>
                         <StyledInput type="file" id="picture" name="picture" ></StyledInput>
-                </InputContainerFile> */}
+                </InputContainerFile>
                 <HeadlineAddPlant>Intervalldaten</HeadlineAddPlant>
                 <InputContainer>
                     <StyledLabel htmlFor="wateringinterval">Gießintervall*</StyledLabel>
