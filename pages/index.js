@@ -21,7 +21,9 @@ export default function Home({}) {
         <PageViewer>Dashboard</PageViewer>
       </NavigationContainer>
       <PlantCardWrapper>
-        {data.map((plant, index) => (
+        {data && data.length === 0 && <p>Keine Pflanzen vorhanden</p>}
+        {}
+        {data && data.length > 0 && data.map((plant, index) => (
           <DashboardPlantCard 
           Details={[
             {Label: "Größe", value: plant.size},
