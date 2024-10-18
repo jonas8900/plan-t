@@ -8,10 +8,10 @@ import useSWR from "swr";
 
 
 export default function Home({}) {
-  // const { data, isLoading, error } = useSWR("/api/getPlant");
+  const { data, isLoading} = useSWR("/api/getPlant");
 
 
-  // if(error || !data) return <div>Error...</div>;
+  if(isLoading) return <div>Loading...</div>;
 
   return (
     <>
@@ -20,7 +20,7 @@ export default function Home({}) {
         <MaterialIconAdd>add_circle</MaterialIconAdd>
         <PageViewer>Dashboard</PageViewer>
       </NavigationContainer>
-      {/* <PlantCardWrapper>
+      <PlantCardWrapper>
         {data && data.length === 0 && <p>Keine Pflanzen vorhanden</p>}
         {data && data.length > 0 && data.map((plant, index) => (
           <DashboardPlantCard 
@@ -35,7 +35,7 @@ export default function Home({}) {
           key={index}
           />
         ))}
-      </PlantCardWrapper> */}
+      </PlantCardWrapper>
       <Navbar />
     </>
   );
