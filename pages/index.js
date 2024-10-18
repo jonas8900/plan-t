@@ -11,7 +11,7 @@ export default function Home({}) {
   const { data, isLoading, error } = useSWR("api/getPlant");
 
 
-  if(error || !data) return <div>Error...{error}</div>;
+  if(error || !data) return <div>Error...</div>;
 
   return (
     <>
