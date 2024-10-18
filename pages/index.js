@@ -11,7 +11,7 @@ export default function Home({}) {
   const { data, isLoading, error } = useSWR("api/getPlant");
 
 
-  if(error || !data) return <div>Error...</div>;
+  if(error || !data) return <div>Error...{error}</div>;
 
   return (
     <>
@@ -22,7 +22,6 @@ export default function Home({}) {
       </NavigationContainer>
       <PlantCardWrapper>
         {data && data.length === 0 && <p>Keine Pflanzen vorhanden</p>}
-        {}
         {data && data.length > 0 && data.map((plant, index) => (
           <DashboardPlantCard 
           Details={[
