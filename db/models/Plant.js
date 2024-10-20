@@ -11,6 +11,8 @@ const plantSchema = new Schema({
   repotting: { type: Date, required: true },
   size: { type: Number, required: false }, 
   wateringinterval: { type: Number, required: true }, 
+  lastwatering: { type: Date, required: true },
+  description: { type: String, required: false },
 });
 
 const connection = mongoose.createConnection(process.env.MONGODB_URI, { dbName: "plantsDatabase" });

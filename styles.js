@@ -3,6 +3,37 @@ import { createGlobalStyle } from "styled-components";
 
 export default createGlobalStyle`
 
+@font-face {
+    font-family: 'Poppins';
+    src: url('/fonts/Poppins/Poppins-Regular.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+  }
+
+  @font-face {
+    font-family: 'Poppins';
+    src: url('/fonts/Poppins/Poppins-Medium.ttf') format('truetype');
+    font-weight: 500;
+    font-style: normal;
+  }
+
+  @font-face {
+    font-family: 'Poppins';
+    src: url('/fonts/Poppins/Poppins-SemiBold.ttf') format('truetype');
+    font-weight: 600;
+    font-style: normal;
+  }
+
+  @font-face {
+    font-family: 'Poppins';
+    src: url('/fonts/Poppins/Poppins-Bold.ttf') format('truetype');
+    font-weight: 700;
+    font-style: normal;
+  }
+
+
+
+
   *,
   *::before,
   *::after {
@@ -39,8 +70,5 @@ export default createGlobalStyle`
     color: rgba(200, 200, 200, 0.8);
   }
 
-  input[type="date"]::-webkit-calendar-picker-indicator {
-    filter: invert(1);
-  }
 
 `;

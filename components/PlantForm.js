@@ -1,54 +1,53 @@
+import { set } from "mongoose";
+import { useRouter } from "next/router";
+import { useState } from "react";
 import styled from "styled-components";
 
-export default function PlantForm() {
+export default function PlantForm({handleSubmit, plantData}) {
+    const router = useRouter();
 
-    async function handleSubmit(event) {
-        event.preventDefault();
+    console.log(plantData);
 
-        const formData = new FormData(event.target);
-		const data = Object.fromEntries(formData);
-
-        const response = await fetch("/api/addPlant", {
-			method: "POST",
-			headers: {
-				"Content-Type": "application/json",
-			},
-			body: JSON.stringify(data),
-		});
-
-		if (!response.ok) {
-			alert("Es ist ein fehler aufgetreten, bitte versuche es erneut");
-		} else {
-			alert("Job wurde erfolgreich hinzugefügt");
-		}
-
+    function formatDateString(dateString) {
+        const date = new Date(dateString);
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`; 
     }
+    
+    
 
+    
     return (
         <Section>
             <HeadlineAddPlant>Pflanzendaten</HeadlineAddPlant>
             <form onSubmit={handleSubmit}>
                 <InputContainer>
                     <StyledLabel htmlFor="plantname">Name der Pflanze*</StyledLabel>
-                    <StyledInput type="text" id="plantname" name="plantname" placeholder="z.B. Bonsai" required></StyledInput>
+                    <StyledInput type="text" id="plantname" name="plantname" placeholder="z.B. Bonsai" maxLength={60} value={plantData && plantData.plantname ? plantData.plantname : ''} required ></StyledInput>
                 </InputContainer>
                 <InputContainer>
                     <StyledLabel htmlFor="planttype">Pflanzentyp*</StyledLabel>
-                    <StyledInput type="text" id="planttype" name="planttype" placeholder="z.B. Juniperus chinensis" required></StyledInput>
+                    <StyledInput type="text" id="planttype" name="planttype" placeholder="z.B. Juniperus chinensis" maxLength={60} value={plantData && plantData.planttype ? plantData.planttype : ''} required></StyledInput>
+                </InputContainer>
+                <InputContainer>
+                    <StyledLabel htmlFor="description">Beschreibung</StyledLabel>
+                    <StyledTextArea type="textarea" id="description" name="description" placeholder="z.B. Diese Pflanze benötigt extrem Viel licht..." rows={3} maxLength={120} value={plantData && plantData.description ? plantData.description : ''}></StyledTextArea>
                 </InputContainer>
                 <SmallInputWrapper>
                     <InputContainerSmall>
-                        <StyledLabel htmlFor="size">Größe</StyledLabel>
-                        <StyledInput type="text" id="size" name="size" placeholder="cm"></StyledInput>
+                        <StyledLabel htmlFor="size">Größe (in cm)</StyledLabel>
+                        <StyledInput type="number" id="size" name="size" placeholder="cm" min={1} value={plantData && plantData.size ? plantData.size : ''}></StyledInput>
                     </InputContainerSmall>
                     <InputContainerSmall>
-                        <StyledLabel htmlFor="purchaseprice">Kaufpreis</StyledLabel>
-                        <StyledInput type="text" id="purchaseprice" name="purchaseprice" placeholder="€"></StyledInput>
+                        <StyledLabel htmlFor="purchaseprice">Kaufpreis (in €)</StyledLabel>
+                        <StyledInput type="number" id="purchaseprice" name="purchaseprice" placeholder="€" step="any" min={0} value={plantData && plantData.purchaseprice ? plantData.purchaseprice : ''}/>
                     </InputContainerSmall>
                 </SmallInputWrapper>
                 <InputContainer>
                     <StyledLabel htmlFor="plantprocurement">Beschaffung der Pflanze</StyledLabel>
-                    <StyledInput type="text" id="plantprocurement" name="plantprocurement" placeholder="z.B. Ableger"></StyledInput>
+                    <StyledInput type="text" id="plantprocurement" name="plantprocurement" maxLength={60} placeholder="z.B. Ableger" value={plantData && plantData.plantprocurement ? plantData.plantprocurement : ''}></StyledInput>
                 </InputContainer>
                 <InputContainerFile>
                         <StyledFileUploadLabel htmlFor="picture">Bild hochladen</StyledFileUploadLabel>
@@ -56,12 +55,16 @@ export default function PlantForm() {
                 </InputContainerFile>
                 <HeadlineAddPlant>Intervalldaten</HeadlineAddPlant>
                 <InputContainer>
-                    <StyledLabel htmlFor="wateringinterval">Gießintervall*</StyledLabel>
-                    <StyledInput placeholder="Anzahl gießen in Tagen z.B. 2 (jeden zweiten Tag)" type="text" id="wateringinterval" name="wateringinterval" required/>
+                    <StyledLabel htmlFor="repotting">Letztes Gießen*</StyledLabel>
+                    <StyledInput type="date" id="lastwatering" name="lastwatering" required value={plantData && plantData.lastwatering ? formatDateString(plantData.lastwatering) : ''} ></StyledInput>
+                </InputContainer>
+                <InputContainer>
+                    <StyledLabel htmlFor="wateringinterval">Gießintervall* (in Tagen)</StyledLabel>
+                    <StyledInput placeholder="z.B. 2 (jeden zweiten Tag)" type="number" id="wateringinterval" min={1} name="wateringinterval" required value={plantData && plantData.wateringinterval ? plantData.wateringinterval : ''}/>
                 </InputContainer>
                 <InputContainer>
                     <StyledLabel htmlFor="repotting">Letztes umtopfen*</StyledLabel>
-                    <StyledInput type="date" id="repotting" name="repotting" required></StyledInput>
+                    <StyledInput type="date" id="repotting" name="repotting" required value={plantData && plantData.lastwatering ? formatDateString(plantData.lastwatering) : ''} ></StyledInput>
                 </InputContainer>
                 <ButtonContainer>
                     <Button type="submit" >Speichern</Button>
@@ -130,6 +133,17 @@ const StyledInput = styled.input`
     padding: 0.5rem;
     border: 1px solid #CECECE;
     border-radius: 5px;
+    font-family: poppins;
+    font-size: 0.9rem;
+    `;
+
+const StyledTextArea = styled.textarea`
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #CECECE;
+    border-radius: 5px;
+    font-family: poppins;
+    font-size: 0.9rem;
     `;
 
 const ButtonContainer = styled.div`

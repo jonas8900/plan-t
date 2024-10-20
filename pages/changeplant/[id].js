@@ -7,9 +7,13 @@ import Link from "next/link";
 import styled from "styled-components";
 import { IoArrowBackOutline } from "react-icons/io5";
 import { useRouter } from "next/router";
+import useSWR from "swr";
 
-export default function AddPlants() {
+export default function ChangePlant() {
   const router = useRouter();
+
+  const { id } = router.query;
+  const { data, error, isLoading } = useSWR(id ? `/api/getSinglePlant?id=${id}` : null);
 
 
   async function handleSubmit(event) {
@@ -18,23 +22,24 @@ export default function AddPlants() {
     const formData = new FormData(event.target);
     const data = Object.fromEntries(formData);
 
+    console.log(data);
 
-    const response = await fetch("/api/addPlant", {
-      method: "POST",
-      headers: {
-       "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
-    });
+    // const response = await fetch("/api/changePlant", {
+    //   method: "PUT",
+    //   headers: {
+    //    "Content-Type": "application/json",
+    //   },
+    //   body: JSON.stringify(data),
+    // });
 
-    if (!response.ok) {
-      alert("Es ist ein fehler aufgetreten, bitte versuche es erneut");
-    } else {
-      alert("Job wurde erfolgreich hinzugefügt");
-            router.push("/");
-    }
+    // if (!response.ok) {
+    //   alert("Es ist ein fehler aufgetreten, bitte versuche es erneut");
+    // } else {
+    //   alert("Job wurde erfolgreich hinzugefügt");
+    //         router.push("/");
+    // }
 
-    event.target.reset();
+    // event.target.reset();
 }
 
 
@@ -45,9 +50,9 @@ export default function AddPlants() {
         <IconContainer href="/">
           <ReactIconArrowBack IconComponent={IoArrowBackOutline}/>
         </IconContainer>
-        <PageViewer>Pflanze anlegen</PageViewer>
+        <PageViewer>Pflanze ändern</PageViewer>
       </NavigationContainer>
-      <PlantForm handleSubmit={handleSubmit} />
+      <PlantForm handleSubmit={handleSubmit} plantData={data}/>
       <Navbar />
     </>
   );
