@@ -112,7 +112,7 @@ const LinkToScanner = styled(Link)`
 `;
 
 const ReactIconScan = styled(ReactIcon)`
-    color: var(--white-font-and-icon-color);
+    color: var(--dark-brown-color);
     font-size: 2rem;
     display: flex;
     justify-content: center;

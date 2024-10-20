@@ -24,22 +24,22 @@ export default function ChangePlant() {
 
     console.log(data);
 
-    // const response = await fetch("/api/changePlant", {
-    //   method: "PUT",
-    //   headers: {
-    //    "Content-Type": "application/json",
-    //   },
-    //   body: JSON.stringify(data),
-    // });
+    const response = await fetch(`/api/changePlant?id=${id}`, {
+      method: "PUT",
+      headers: {
+       "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    });
 
-    // if (!response.ok) {
-    //   alert("Es ist ein fehler aufgetreten, bitte versuche es erneut");
-    // } else {
-    //   alert("Job wurde erfolgreich hinzugefügt");
-    //         router.push("/");
-    // }
+    if (!response.ok) {
+      alert("Es ist ein fehler aufgetreten, bitte versuche es erneut");
+    } else {
+      alert("Job wurde erfolgreich hinzugefügt");
+            router.push("/");
+    }
 
-    // event.target.reset();
+    event.target.reset();
 }
 
 

@@ -37,6 +37,7 @@ export default function PlantDetails() {
   if (error) return <div>Error loading plant details</div>;
   if (!data) return <div>No plant details available</div>;
 
+  console.log
 
   async function handleSubmit(event) {
     event.preventDefault();
@@ -51,14 +52,12 @@ export default function PlantDetails() {
       },
       body: JSON.stringify(data),
     });
-    
-    console.log(data);
-    console.log(response);
-
+  
     if (!response.ok) {
       alert("Es ist ein fehler aufgetreten, bitte versuche es erneut");
     } else {
-      alert("Job wurde erfolgreich hinzugefügt");
+      await response.json(); 
+      alert("Daten wurden erfolgreich aktualisiert");
       toggleModal();
     }
   }
@@ -111,12 +110,12 @@ export default function PlantDetails() {
             </DetailsWrapper>
           </DetailsCustomFlexContainer>
           <DetailsWrapper>
-            <DetailCaption>Letztes umtopfen</DetailCaption>
-            <DetailValue>{new Date(data.repotting).toLocaleDateString("de-DE")}</DetailValue>
-          </DetailsWrapper>
-          <DetailsWrapper>
             <DetailCaption>Letztes gießen</DetailCaption>
             <DetailValue>{new Date(data.lastwatering).toLocaleDateString("de-DE")}</DetailValue>
+          </DetailsWrapper>
+          <DetailsWrapper>
+            <DetailCaption>Letztes umtopfen</DetailCaption>
+            <DetailValue>{new Date(data.repotting).toLocaleDateString("de-DE")}</DetailValue>
           </DetailsWrapper>
           {data.plantprocurement && (
             <DetailsWrapper>
@@ -237,7 +236,7 @@ const StyledButton = styled.button`
   font-size: 1rem;
   width: 10rem;
   cursor: pointer;
-  height: 3rem;
+  height: 2.6rem;
   `;
 
 const StyledQRCodeButton = styled.button`
@@ -250,7 +249,7 @@ const StyledQRCodeButton = styled.button`
   font-size: 1rem;
   width: 10rem;
   cursor: pointer;
-  height: 3rem;
+  height: 2.6rem;
   `;
 
 const PlantDetailsContainer = styled.div`

@@ -57,6 +57,8 @@ const ReactIconArrowBack = styled(ReactIcon)`
   font-size: 2rem;
   color: var(--white-font-and-icon-color);
   margin: 0rem;
+  display: flex;
+  align-items: center;
 `;
 
 const NavigationContainer = styled.div`
