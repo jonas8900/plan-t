@@ -13,6 +13,7 @@ export default function PlantForm({ handleSubmit, plantData }) {
     wateringinterval: "",
     repotting: "",
   };
+
   const [formData, setFormData] = useState(initialFormState);
 
   useEffect(() => {
@@ -21,18 +22,17 @@ export default function PlantForm({ handleSubmit, plantData }) {
     }
   }, [plantData]);
 
-  const handleChange = (e) => {
+
+  function handleChange(e) {
     const { name, value } = e.target;
     setFormData((prevData) => ({ ...prevData, [name]: value }));
   };
 
   function formatDateString(dateString) {
+    if (!dateString) return ""; 
     const date = new Date(dateString);
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const day = String(date.getDate()).padStart(2, "0");
-    return `${year}-${month}-${day}`;
-  }
+    return isNaN(date) ? "" : date.toISOString().split("T")[0];
+  };
 
   const renderInputField = (label, type, name, placeholder, required = false, additionalProps = {}) => (
     <InputContainer>
@@ -42,7 +42,7 @@ export default function PlantForm({ handleSubmit, plantData }) {
         id={name}
         name={name}
         placeholder={placeholder}
-        value={type === "date" ? formatDateString(formData[name]) : formData[name]}
+        value={formData[name]}
         onChange={handleChange}
         required={required}
         {...additionalProps}
@@ -72,16 +72,38 @@ export default function PlantForm({ handleSubmit, plantData }) {
           {renderInputField("Größe (in cm)", "number", "size", "cm", false, { min: 1 })}
           {renderInputField("Kaufpreis (in €)", "number", "purchaseprice", "€", false, { min: 0, step: "any" })}
         </SmallInputWrapper>
-        {renderInputField("Beschaffung der Pflanze", "text", "plantprocurement", "z.B. Ableger")}
+          {renderInputField("Beschaffung der Pflanze", "text", "plantprocurement", "z.B. Ableger")}
         <InputContainerFile>
           <StyledFileUploadLabel htmlFor="picture">Bild hochladen</StyledFileUploadLabel>
           <StyledInput type="file" id="picture" name="picture" />
         </InputContainerFile>
 
         <HeadlineAddPlant>Intervalldaten</HeadlineAddPlant>
-        {renderInputField("Letztes Gießen", "date", "lastwatering", "", true)}
+        <InputContainer>
+          <StyledLabel htmlFor="lastwatering">Letztes Gießen</StyledLabel>
+          <StyledDateInput
+            type="date"
+            id="lastwatering"
+            name="lastwatering"
+            value={formatDateString(formData.lastwatering)}
+            onChange={handleChange}
+            min="2024-01-01"
+            max={new Date().toISOString().split("T")[0]}
+          />
+        </InputContainer>
         {renderInputField("Gießintervall (in Tagen)", "number", "wateringinterval", "z.B. 2", true, { min: 1 })}
-        {renderInputField("Letztes Umtopfen", "date", "repotting", "", true)}
+        <InputContainer>
+          <StyledLabel htmlFor="lastwatering">Letztes Umtopfen</StyledLabel>
+          <StyledDateInput
+            type="date"
+            id="repotting"
+            name="repotting"
+            value={formatDateString(formData.repotting)}
+            onChange={handleChange}
+            min="2024-01-01"
+            max={new Date().toISOString().split("T")[0]}
+          />
+        </InputContainer>
         <ButtonContainer>
           <Button type="submit">Speichern</Button>
         </ButtonContainer>
@@ -135,6 +157,15 @@ const InputContainerFile = styled.div`
 
 const StyledInput = styled.input`
   width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #CECECE;
+  border-radius: 5px;
+  font-family: poppins;
+  font-size: 0.9rem;
+`;
+
+const StyledDateInput = styled.input`
+  width: 50%;
   padding: 0.5rem;
   border: 1px solid #CECECE;
   border-radius: 5px;

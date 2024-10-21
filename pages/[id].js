@@ -150,7 +150,7 @@ export default function PlantDetails() {
           </InputContainer>
           <InputContainer>
             <StyledLabel htmlFor="dateforchange">Datum</StyledLabel>
-            <StyledInput type="date" id="dateforchange" name="dateforchange" required></StyledInput>
+            <StyledInput type="date" id="dateforchange" name="dateforchange" min="2024-01-01" max={new Date().toISOString().split("T")[0]} required></StyledInput>
           </InputContainer>
           <StyledButtonWrapper>
             <StyledButton type="submit">Speichern</StyledButton>

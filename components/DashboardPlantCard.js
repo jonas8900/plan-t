@@ -3,7 +3,6 @@ import PlantDetailsInCard from "./PlantDetailsInCard";
 import styled from "styled-components";
 import ReactIcon from "@/components/Reacticon";
 import Link from "next/link";
-import { MdOutlineQrCode2 } from "react-icons/md";
 import { FaPrint } from "react-icons/fa";
 
 export default function DashboardPlantCard({
@@ -11,7 +10,11 @@ export default function DashboardPlantCard({
   subheadline,
   Details = [],
   href,
+  handleClickedPlant,
+  plantId,
 }) {
+
+
   return (
     <PlantCard>
       <PlantImage
@@ -33,9 +36,9 @@ export default function DashboardPlantCard({
       </ContentWrapper>
       <ActionWrapper>
         <Button href={href}>Details</Button>
-        <LinkToScanner href="/scan">
+        <ButtonToPrintQRCode onClick={() => handleClickedPlant(plantId)}  href="/scan">
           <ReactIconScan IconComponent={FaPrint}/>
-        </LinkToScanner>
+        </ButtonToPrintQRCode>
       </ActionWrapper>
     </PlantCard>
   );
@@ -107,8 +110,11 @@ const Button = styled(Link)`
   text-decoration: none;
 `;
 
-const LinkToScanner = styled(Link)`
+const ButtonToPrintQRCode = styled.button`
   text-decoration: none;
+  border: none;
+  background-color: transparent;
+  cursor: pointer;
 `;
 
 const ReactIconScan = styled(ReactIcon)`

@@ -69,6 +69,4 @@ export default createGlobalStyle`
   ::placeholder {
     color: rgba(200, 200, 200, 0.8);
   }
-
-
 `;

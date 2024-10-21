@@ -35,7 +35,7 @@ export default function Profile() {
         <StyledForm>
             <InputContainer>
                 <StyledLabel htmlFor="email">Email adresse</StyledLabel>
-                <StyledInput type="text" id="email" name="email" required />
+                <StyledInput type="text" id="email" name="email" placeholder="email" required />
             </InputContainer>
             <InputContainer>
                 <StyledLabel htmlFor="password">Passwort</StyledLabel>
