@@ -18,6 +18,8 @@ export default function PlantDetails() {
   const router = useRouter();
   const [isModalOpen, setModalOpen] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
+  const [isQRCodeModalOpen, setQRCodeModalOpen] = useState(false);
+  const [isQRCodeClosing, setIsQRCodeClosing] = useState(false);
 
   function toggleModal() {
     if (isModalOpen) {
@@ -30,6 +32,18 @@ export default function PlantDetails() {
       setModalOpen(true);
     }
   };
+
+  function toggleQrCodeModal() {
+    if (isQRCodeModalOpen) {
+      setIsQRCodeClosing(true);
+      setTimeout(() => {
+        setQRCodeModalOpen(false);
+        setIsQRCodeClosing(false);
+      }, 300);
+    } else {
+      setQRCodeModalOpen(true);
+    }
+  }
 
   const { id } = router.query;
   const { data, error, isLoading } = useSWR(id ? `/api/getSinglePlant?id=${id}` : null);
@@ -133,7 +147,7 @@ export default function PlantDetails() {
         </DetailsContainer>
         </PlantDetailsContainer>
         <StyledButtonWrapper>
-          <StyledQRCodeButton onClick={toggleModal}>QR Code drucken</StyledQRCodeButton>
+          <StyledQRCodeButton onClick={toggleQrCodeModal}>QR Code drucken</StyledQRCodeButton>
         </StyledButtonWrapper>
       <Modal
         isOpen={isModalOpen}
@@ -163,11 +177,10 @@ export default function PlantDetails() {
         <StyledDeleteButton onClick={handleDeletePlant}>Pflanze löschen</StyledDeleteButton>
       </PageViewerContainer>
       <Navbar />
-
       <QrCodeGenerator
-        isOpen={isModalOpen}
-        isClosing={isClosing}
-        onClose={toggleModal}
+        isOpen={isQRCodeModalOpen}
+        isClosing={isQRCodeClosing}
+        onClose={toggleQrCodeModal}
         plantId={data._id}
         data={data}
         modalheadline="QR Code für deine Pflanze"
