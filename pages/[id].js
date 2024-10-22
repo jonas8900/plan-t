@@ -12,6 +12,7 @@ import { handleWateringInterval } from "@/utils";
 import { useState } from "react";
 import Modal from "@/components/InfoModal";
 import Navbar from "@/components/Navbar";
+import QrCodeGenerator from "@/components/QrCodeGenerator";
 
 export default function PlantDetails() {
   const router = useRouter();
@@ -132,7 +133,7 @@ export default function PlantDetails() {
         </DetailsContainer>
         </PlantDetailsContainer>
         <StyledButtonWrapper>
-          <StyledQRCodeButton>QR Code drucken</StyledQRCodeButton>
+          <StyledQRCodeButton onClick={toggleModal}>QR Code drucken</StyledQRCodeButton>
         </StyledButtonWrapper>
       <Modal
         isOpen={isModalOpen}
@@ -162,6 +163,15 @@ export default function PlantDetails() {
         <StyledDeleteButton onClick={handleDeletePlant}>Pflanze löschen</StyledDeleteButton>
       </PageViewerContainer>
       <Navbar />
+
+      <QrCodeGenerator
+        isOpen={isModalOpen}
+        isClosing={isClosing}
+        onClose={toggleModal}
+        plantId={data._id}
+        data={data}
+        modalheadline="QR Code für deine Pflanze"
+      />
       </>
   );
 }

@@ -17,3 +17,13 @@ häufige wiederholungen in der Form
 - Form noch einmal genauer anschauen und ausmisten
 
 
+
+
+## was fehlt noch ? 
+- Bilder hochladen mit Amazon AWS bucket, URI speichern in Mongodb
+- Login mit google und eigenen credentials 
+- Alarmpage erstellen
+- refactoring backendcalls
+- verringerung Bilddateien 
+- einbau App-download 
+- scanfunktion fertigstellung (routing zur ID wenn scan) anmeldung vor seitenaccess es muss geprüft werden ob die user ID in der ID der pflanze steht

@@ -8,16 +8,16 @@ import { MdAddCircle } from "react-icons/md";
 import ReactIcon from "@/components/Reacticon";
 import Link from "next/link";
 import { handleWateringInterval } from "@/utils";
-import { QrCode } from "@mui/icons-material";
 import QrCodeGenerator from "@/components/QrCodeGenerator";
 import { useState } from "react";
-import Modal from "@/components/InfoModal";
 
 export default function Home({}) {
   const { data, isLoading } = useSWR("/api/getPlants");
   const [isModalOpen, setModalOpen] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
   const [plantId, setPlantId] = useState(null);
+
+
 
   if (isLoading) return <div>Loading...</div>;
 
@@ -40,6 +40,7 @@ export default function Home({}) {
       setPlantId(id);
     }
   }
+
 
 
 
@@ -90,6 +91,7 @@ export default function Home({}) {
         isClosing={isClosing}
         onClose={toggleModal}
         plantId={plantId}
+        data={data}
         modalheadline="QR Code für deine Pflanze"
       />
     </>

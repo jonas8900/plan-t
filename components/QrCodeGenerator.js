@@ -15,7 +15,8 @@ export default function QrCodeGenerator({isOpen, isClosing, onClose, children, p
       const imgData = canvas.toDataURL('image/png');
       const pdf = new jsPDF();
       pdf.addImage(imgData, 'PNG', 10, 10);
-      pdf.save('qr-code.pdf');
+      pdf.text(plantId, 2,200 );
+      pdf.save(`${plantId}-qr-code.pdf`);
     });
   };
 

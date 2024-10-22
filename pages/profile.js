@@ -7,6 +7,7 @@ import { IoArrowBackOutline } from "react-icons/io5";
 import styled from "styled-components";
 import { MdVisibility } from "react-icons/md";
 import Navbar from "@/components/Navbar";
+import Image from "next/image";
 
 export default function Profile() {
     const [typeSwitch, setTypeSwitch] = useState('password');
@@ -47,9 +48,11 @@ export default function Profile() {
             <ButtonWrapper>
                 <SubmitButton type="submit">Login</SubmitButton>
             </ButtonWrapper>
-            <ButtonWrapper>
-                <RegisterButton type="button">Jetzt registrieren</RegisterButton>
-            </ButtonWrapper>
+            <StyledLine><StyledDiv></StyledDiv><StyledParagraphLine>oder</StyledParagraphLine><StyledDiv></StyledDiv></StyledLine>
+            <StyledGoogleWrapper>
+                    <StyledGoogleButton><Image src="../icons/icons8-google.svg" alt="google-icon" width={22} height={22}/>Login mit Google</StyledGoogleButton>
+            </StyledGoogleWrapper>
+            <StyledRegisterLink href="">Noch keinen Account? Jetzt Registrieren</StyledRegisterLink>
         </StyledForm>
         <Navbar />
         </>
@@ -90,12 +93,22 @@ const Headline = styled.h1`
     text-align: center;
     font-size: 1.4375rem;
     font-weight: 500;
-    margin: 2rem auto 3rem auto;
+    margin: 1.5rem auto 2rem auto;
 `;
 
 const StyledForm = styled.form`
 
     `;
+
+const StyledRegisterLink = styled(Link)`
+    color: var(--dark-brown-color);
+    text-decoration: none;
+    font-size: 0.8rem;
+    display: flex;
+    justify-content: center;
+    margin-top: 1rem;
+
+`;
 
 const StyledLabel = styled.label`
   color: var(--dark-font-color);
@@ -139,28 +152,70 @@ const ButtonWrapper = styled.div`
     display: flex;
     justify-content: center;
     margin-top: 2rem;
+    padding: 1rem;
+    margin-left: 1rem;
+    margin-right: 1rem;
 `;
 
 
 const SubmitButton = styled.button`
-    background-color: var(--dark-green-color);
+    background-color: white;
     color: var(--white-font-and-icon-color);
-    padding: 0.7rem 1rem;
+    background-color: var(--dark-green-color);
     border: none;
-    border-radius: 12px;
-    margin-top: 1rem;
+    border-radius: 1rem;
+    width: 100%;
+    cursor: pointer;
+    height: 44px;
+    display: flex; 
+    justify-content: center;
+    align-items: center;
+    font-weight: 500;
     font-size: 1rem;
-    font-weight: 600;
-    width: 85%;
+    display: flex;
+    gap: 0.3rem;
     `;
 
-const RegisterButton = styled.button`
-    background-color: var(--dark-brown-color);
+
+const StyledLine = styled.div`
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+`;
+
+const StyledDiv = styled.div`
+    background-color: var(--dark-font-color);
+    height: 1px;
+    width: 40%;
+`;
+
+const StyledParagraphLine = styled.p`
+    color: var(--dark-font-color);
+    font-size: 0.8rem;
+`;
+
+
+const StyledGoogleWrapper = styled.div`
+    padding: 1rem;
+    margin-left: 1rem;
+    margin-right: 1rem;
+`;
+
+const StyledGoogleButton = styled.button`
+    background-color: white;
     color: var(--white-font-and-icon-color);
-    padding: 0.7rem 1rem;
+    background-color: var(--dark-brown-color);
     border: none;
-    border-radius: 12px;
-    font-size: 1rem;
-    font-weight: 600;
-    width: 85%;
+    border-radius: 1rem;
+    width: 100%;
+    cursor: pointer;
+    height: 44px;
+    display: flex; 
+    justify-content: center;
+    align-items: center;
+    font-weight: 500;
+    font-size: 0.9rem;
+    display: flex;
+    gap: 0.3rem;
 `;
