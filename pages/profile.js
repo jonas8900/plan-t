@@ -16,10 +16,10 @@ import RenderInputField from "@/components/renderInputField";
 export default function Profile() {
     const [typeSwitch, setTypeSwitch] = useState('password');
     const { data: session } = useSession();
-    const {data} = useSWR("/api/getPlants");
+    const { data } = useSWR("/api/getPlants");
     let PlantCosts = 0;
 
-    if(session) {
+    if(session && data) {
         for (let i = 0; i < data.length; i++) {
             console.log(data[i].purchaseprice);
             if(data[i].purchaseprice){
@@ -62,6 +62,7 @@ export default function Profile() {
                     <StyledLabel htmlFor="email">Email adresse</StyledLabel>
                     <StyledInput type="text" id="email" name="email" placeholder="email" value={session.user?.email} readOnly/>
                 </InputContainer>
+                {data && data.length > 0 && (
                 <SmallInputWrapper>
                     <InputContainerSmall>
                         <StyledLabel htmlFor="yourplants">Pflanzen</StyledLabel>
@@ -72,6 +73,7 @@ export default function Profile() {
                         <StyledInputSmall type="text" id="costs" name="costs" placeholder="costs" value={PlantCosts + ",00 €"} readOnly />
                     </InputContainerSmall>
                 </SmallInputWrapper>
+                )}
                 <StyledLogoutButton>
                     <SubmitButtonLogOut onClick={() => signOut()}>Logout</SubmitButtonLogOut>
                 </StyledLogoutButton>
