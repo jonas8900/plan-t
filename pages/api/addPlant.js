@@ -5,6 +5,8 @@ import Plant from "../../db/models/Plant";
 export default async function handler(request, response) {
 	await dbConnect();
 
+	console.log(request.body);
+
 	if (request.method === "POST") {
 		try {
 			await Plant.create(request.body);

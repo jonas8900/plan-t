@@ -10,12 +10,26 @@ import Link from "next/link";
 import { handleWateringInterval } from "@/utils";
 import QrCodeGenerator from "@/components/QrCodeGenerator";
 import { useState } from "react";
+import { useSession } from "next-auth/react";
+import NeedToLogin from "@/components/NeedToLoginScreen";
+import { useRouter } from "next/router";
 
 export default function Home({}) {
   const { data, isLoading } = useSWR("/api/getPlants");
   const [isModalOpen, setModalOpen] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
   const [plantId, setPlantId] = useState(null);
+  const { data: session} = useSession();
+
+
+
+  if(!session) {
+    return (
+      <>
+        <NeedToLogin />
+      </>
+    );
+  }
 
 
 
@@ -42,7 +56,7 @@ export default function Home({}) {
   }
 
 
-
+console.log(data);
 
   return (
     <>

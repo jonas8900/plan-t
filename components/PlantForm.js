@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import styled from "styled-components";
+import RenderInputField from "./renderInputField";
 
 export default function PlantForm({ handleSubmit, plantData }) {
   const initialFormState = {
@@ -54,8 +55,24 @@ export default function PlantForm({ handleSubmit, plantData }) {
     <Section>
       <HeadlineAddPlant>Pflanzendaten</HeadlineAddPlant>
       <form onSubmit={handleSubmit}>
-        {renderInputField("Name der Pflanze", "text", "plantname", "z.B. Bonsai", true)}
-        {renderInputField("Pflanzentyp", "text", "planttype", "z.B. Juniperus chinensis", true)}
+        <RenderInputField
+          label={"Name der Pflanze"}
+          type={"text"}
+          name={"plantname"}
+          placeholder={"z.B. Bonsai"}
+          formData={formData}
+          handleChange={handleChange}
+          required={true}
+        />
+        <RenderInputField
+          label={"Pflanzentyp"}
+          type={"text"}
+          name={"planttype"}
+          placeholder={"z.B. Juniperus chinensis"}
+          formData={formData}
+          handleChange={handleChange}
+          required={true}
+        />
         <InputContainer>
           <StyledLabel htmlFor="description">Beschreibung</StyledLabel>
           <StyledTextArea
@@ -69,10 +86,36 @@ export default function PlantForm({ handleSubmit, plantData }) {
           />
         </InputContainer>
         <SmallInputWrapper>
-          {renderInputField("Größe (in cm)", "number", "size", "cm", false, { min: 1 })}
-          {renderInputField("Kaufpreis (in €)", "number", "purchaseprice", "€", false, { min: 0, step: "any" })}
+          <RenderInputField
+            label={"Größe (in cm)"}
+            type={"number"}
+            name={"size"}
+            placeholder={"cm"}
+            formData={formData}
+            handleChange={handleChange}
+            required={false}
+            additionalProps={{ min: 1 }}
+          />
+          <RenderInputField
+            label={"Kaufpreis (in €)"}
+            type={"number"}
+            name={"purchaseprice"}
+            placeholder={"€"}
+            formData={formData}
+            handleChange={handleChange}
+            required={false}
+            additionalProps={{ min: 0, step: "any" }}
+          />
         </SmallInputWrapper>
-          {renderInputField("Beschaffung der Pflanze", "text", "plantprocurement", "z.B. Ableger")}
+        <RenderInputField
+          label={"Beschaffung der Pflanze"}
+          type={"text"}
+          name={"plantprocurement"}
+          placeholder={"z.B. Ableger"}
+          formData={formData}
+          handleChange={handleChange}
+          required={false}
+          />
         <InputContainerFile>
           <StyledFileUploadLabel htmlFor="picture">Bild hochladen</StyledFileUploadLabel>
           <StyledInput type="file" id="picture" name="picture" />
@@ -80,7 +123,7 @@ export default function PlantForm({ handleSubmit, plantData }) {
 
         <HeadlineAddPlant>Intervalldaten</HeadlineAddPlant>
         <InputContainer>
-          <StyledLabel htmlFor="lastwatering">Letztes Gießen</StyledLabel>
+          <StyledLabel htmlFor="lastwatering">Letztes Gießen*</StyledLabel>
           <StyledDateInput
             type="date"
             id="lastwatering"
@@ -89,11 +132,21 @@ export default function PlantForm({ handleSubmit, plantData }) {
             onChange={handleChange}
             min="2024-01-01"
             max={new Date().toISOString().split("T")[0]}
+            required
           />
         </InputContainer>
-        {renderInputField("Gießintervall (in Tagen)", "number", "wateringinterval", "z.B. 2", true, { min: 1 })}
+        <RenderInputField
+          label={"Gießintervall (in Tagen)"}
+          type={"number"}
+          name={"wateringinterval"}
+          placeholder={"z.B. 2"}
+          formData={formData}
+          handleChange={handleChange}
+          required={true}
+          additionalProps={{ min: 1 }}
+        />
         <InputContainer>
-          <StyledLabel htmlFor="lastwatering">Letztes Umtopfen</StyledLabel>
+          <StyledLabel htmlFor="lastwatering">Letztes Umtopfen*</StyledLabel>
           <StyledDateInput
             type="date"
             id="repotting"
@@ -102,6 +155,7 @@ export default function PlantForm({ handleSubmit, plantData }) {
             onChange={handleChange}
             min="2024-01-01"
             max={new Date().toISOString().split("T")[0]}
+            required
           />
         </InputContainer>
         <ButtonContainer>

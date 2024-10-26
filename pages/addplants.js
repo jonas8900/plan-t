@@ -7,9 +7,22 @@ import Link from "next/link";
 import styled from "styled-components";
 import { IoArrowBackOutline } from "react-icons/io5";
 import { useRouter } from "next/router";
+import { useSession } from "next-auth/react";
+import NeedToLogin from "@/components/NeedToLoginScreen";
 
 export default function AddPlants() {
+  const { data: session } = useSession();
   const router = useRouter();
+
+  if(!session) {
+    return (
+      <>
+        <NeedToLogin />
+      </>
+    );
+  }
+
+
 
 
   async function handleSubmit(event) {
@@ -17,6 +30,8 @@ export default function AddPlants() {
 
     const formData = new FormData(event.target);
     const data = Object.fromEntries(formData);
+
+    data.userId = session.user.id;
 
 
     const response = await fetch("/api/addPlant", {

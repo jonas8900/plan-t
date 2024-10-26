@@ -18,6 +18,8 @@
     "mongodb": "^6.9.0",
     "mongoose": "^8.7.1",
     "next": "14.2.15",
+    "next-auth": "^4.24.10",
+    "next-safe": "^3.5.0",
     "qrcode.react": "^4.0.1",
     "react": "^18",
     "react-dom": "^18",

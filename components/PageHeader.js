@@ -6,10 +6,12 @@ import ReactIcon from "@/components/Reacticon";
 import { useState } from "react";
 import Link from "next/link";
 import Modal from "@/components/InfoModal"; 
+import { useSession } from "next-auth/react";
 
 export default function PageHeader() {
   const [isModalOpen, setModalOpen] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
+  const { data: session } = useSession();
 
   const toggleModal = () => {
     if (isModalOpen) {
@@ -23,22 +25,33 @@ export default function PageHeader() {
     }
   };
 
+ console.log(session);
+
   return (
     <Section>
       <Headline>Plan-T</Headline>
       <ImageContainer>
         <Headimage
-          src="/images/plant-4427146_640.jpg"
+          src="/images/Favicon Logo.png"
           alt="Plan-T image"
           priority
-          width={100}
-          height={100}
+          width={160}
+          height={160}
         />
       </ImageContainer>
-      <Anchor href="/scan">
-        <ReactIconStyledIcon IconComponent={MdOutlineQrCode2} />
+      {session  ? (
+        <>
+          <AnchorLoggedIn href="/profile">
+            <ProfilePicture src={session?.user.image} alt="user image" width={40} height={40}/>
+          </AnchorLoggedIn>
+          <WelcomeParagraph>Hey {session?.user.name}</WelcomeParagraph>
+        </>
+      ) : (
+  
+        <Anchor href="/profile">
+        Login
       </Anchor>
-
+      )}
       <HelpIconContainer onClick={toggleModal}>
         <ReactIconHelp IconComponent={MdOutlineHelpCenter} />
       </HelpIconContainer>
@@ -67,8 +80,8 @@ const Headline = styled.h1`
   position: absolute;
   padding: 0;
   margin: 0;
-  bottom: 0.7rem;
-  left: 3.5rem;
+  top: 0.7rem;
+  right: 8rem;
   color: var(--white-font-and-icon-color);
   font-size: var(--font-size-header);
   font-family: "Poppins", sans-serif;
@@ -80,41 +93,35 @@ const ImageContainer = styled.div`
   position: absolute;
   width: 8.5rem;
   height: 6.9375rem;
-  top: 0.75rem;
-  left: 2.7rem;
+  top: 1rem;
+  left: 1rem;
 `;
 
 const Headimage = styled(Image)`
-  width: 100%;
-  height: 100%;
+  border-radius: 50%;
   object-fit: cover;
-  border-radius: 0.5625rem;
-  background: linear-gradient(
-      0deg,
-      rgba(152, 199, 160, 0.2) 0%,
-      rgba(152, 199, 160, 0.2) 100%
-    ),
-    lightgray 50% / cover no-repeat;
-  box-shadow: 1px 4px 4px 0px rgba(73, 116, 81, 0.44);
-`;
-
-const ReactIconStyled = styled(ReactIcon)`
-  color: var(--dark-font-color);
-  font-size: 3rem;
-`;
-
-const ReactIconStyledIcon = styled(ReactIcon)`
-  color: var(--white-font-and-icon-color);
-  font-size: 4rem;
+  filter: drop-shadow(1px 4px 4px rgba(73, 116, 81, 0.44));
 `;
 
 const Anchor = styled(Link)`
   position: absolute;
-  right: 0;
-  top: 0;
-  padding-right: 0.3rem;
+  right: 1rem;
+  top: 1rem;
+  padding: 1rem 0.5rem;
+  background-color: var(--light-brown-color);
   text-decoration: none;
-  color: var(--white-font-and-icon-color);
+  border-radius: 12px;
+  font-weight: 600;
+  color: var(--dark-font-color);
+`;
+
+const AnchorLoggedIn = styled(Link)`
+  position: absolute;
+  right: 1rem;
+  top: 1rem;
+  padding: 1rem 0.5rem;
+  text-decoration: none;
+  border-radius: 12px;
 `;
 
 const HelpIconContainer = styled.div`
@@ -134,3 +141,19 @@ const ReactIconHelp = styled(ReactIcon)`
   text-decoration: none;
   color: var(--white-font-and-icon-color);
 `;
+
+const ProfilePicture = styled(Image)`
+  border-radius: 12px;
+  `;
+
+const WelcomeParagraph = styled.p`
+  position: absolute;
+  right: 1rem;
+  top: 4rem;
+  color: var(--white-font-and-icon-color);
+  font-size: 1rem;
+  font-weight: 500;
+  font-family: "Poppins", sans-serif;
+  text-shadow: 5px 3px 4px rgba(107, 107, 107, 0.3);
+`;
+

@@ -13,6 +13,8 @@ import { useState } from "react";
 import Modal from "@/components/InfoModal";
 import Navbar from "@/components/Navbar";
 import QrCodeGenerator from "@/components/QrCodeGenerator";
+import { useSession } from "next-auth/react";
+import NeedToLogin from "@/components/NeedToLoginScreen";
 
 export default function PlantDetails() {
   const router = useRouter();
@@ -20,6 +22,26 @@ export default function PlantDetails() {
   const [isClosing, setIsClosing] = useState(false);
   const [isQRCodeModalOpen, setQRCodeModalOpen] = useState(false);
   const [isQRCodeClosing, setIsQRCodeClosing] = useState(false);
+  const { data: session } = useSession();
+  const { id } = router.query;
+  const { data, error, isLoading } = useSWR(id ? `/api/getSinglePlant?id=${id}` : null);
+
+  if (!session) {
+    return (
+      <>
+        <NeedToLogin />
+      </>
+    );
+  }
+
+  if (isLoading) return <div>Loading...</div>;
+  if (error) return <div>Error loading plant details</div>;
+  if (!data) return <div>No plant details available</div>;
+
+  if(data.error) {
+    alert("Diese Pflanze existiert nicht oder gehört nicht dir");
+    router.push("/");
+  }
 
   function toggleModal() {
     if (isModalOpen) {
@@ -45,20 +67,17 @@ export default function PlantDetails() {
     }
   }
 
-  const { id } = router.query;
-  const { data, error, isLoading } = useSWR(id ? `/api/getSinglePlant?id=${id}` : null);
-
-  if (isLoading) return <div>Loading...</div>;
-  if (error) return <div>Error loading plant details</div>;
-  if (!data) return <div>No plant details available</div>;
-
-  console.log
 
   async function handleSubmit(event) {
     event.preventDefault();
 
     const formData = new FormData(event.target);
     const data = Object.fromEntries(formData);
+
+    if(data.userId !== session.user.id) {
+      alert("Du hast keine Berechtigung für diese Aktion");
+      return false;
+    }
 
     const response = await fetch(`/api/changePlantDates?id=${id}`, {
       method: "PUT",

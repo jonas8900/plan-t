@@ -7,11 +7,25 @@ import ReactIcon from "@/components/Reacticon";
 import PageViewer from "@/components/PageViewer";
 import Link from "next/link";
 import { IoArrowBackOutline } from "react-icons/io5";
+import { useSession } from "next-auth/react";
+import NeedToLogin from "@/components/NeedToLoginScreen";
+import { useRouter } from "next/router";
 
 const QrScanner = dynamic(() => import("react-qr-scanner"), { ssr: false });
 
 export default function Scan() {
   const [result, setResult] = useState(null);
+  const { data: session } = useSession();
+  const router = useRouter();
+
+  if(!session) {
+    return (
+      <>
+        <NeedToLogin />
+      </>
+    );
+  }
+
 
   function handleScan(result) {
     if (result && result.text) {
@@ -22,6 +36,10 @@ export default function Scan() {
 
   function handleError(error) {
     console.error(error);
+  }
+
+  function handleRouteToPlant() {
+    router.push(`/${result}`);
   }
 
   return (
@@ -38,7 +56,7 @@ export default function Scan() {
         <StyledScanner delay={300} onError={handleError} onScan={handleScan} />
         <p>
           {result
-            ? `Gescannter QR-Code: ${result}`
+            ? handleRouteToPlant()
             : "Bitte scanne einen QR-Code"}
         </p>
       </ScanContainer>
