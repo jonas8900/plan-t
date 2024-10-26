@@ -19,7 +19,6 @@ export default function Scan() {
   const router = useRouter();
 
   if(!session) {
-    router.push("/profile");
     return (
       <>
         <NeedToLogin />
