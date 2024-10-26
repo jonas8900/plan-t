@@ -6,9 +6,21 @@ import React, { useState } from "react";
 import { IoArrowBackOutline } from "react-icons/io5";
 import styled from "styled-components";
 import Navbar from "@/components/Navbar";
+import { useSession } from "next-auth/react";
+import NeedToLogin from "@/components/NeedToLoginScreen";
+import { useRouter } from "next/router";
 
 export default function Alarm() {
+  const { data: session } = useSession();
+  const router = useRouter();
 
+  if(!session) {
+    return (
+      <>
+      <NeedToLogin />
+      </>
+    );
+  }
 
 
 

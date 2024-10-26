@@ -58,6 +58,7 @@ export default createGlobalStyle`
     --light-green-color: #99CEAE;
     --mid-green-color: #98C7A0;
     --dark-green-color: #59996B;
+    --light-brown-color: #F3DCCC;
     --dark-brown-color: #978275;
     --dark-font-color: #555555;
     --lightgreen-color: #CBD4C2;

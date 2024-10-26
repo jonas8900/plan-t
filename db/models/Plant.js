@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { use } from "react";
 
 const { Schema } = mongoose;
 
@@ -13,6 +14,7 @@ const plantSchema = new Schema({
   wateringinterval: { type: Number, required: true }, 
   lastwatering: { type: Date, required: true },
   description: { type: String, required: false },
+  userId: { type: String, required: true, index: true },
 });
 
 const connection = mongoose.createConnection(process.env.MONGODB_URI, { dbName: "plantsDatabase" });
