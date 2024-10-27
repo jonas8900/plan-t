@@ -23,21 +23,30 @@ export default function PlantForm({ handleSubmit, plantData }) {
     }
   }, [plantData]);
 
-
   function handleChange(e) {
     const { name, value } = e.target;
     setFormData((prevData) => ({ ...prevData, [name]: value }));
-  };
+  }
 
   function formatDateString(dateString) {
-    if (!dateString) return ""; 
+    if (!dateString) return "";
     const date = new Date(dateString);
     return isNaN(date) ? "" : date.toISOString().split("T")[0];
-  };
+  }
 
-  const renderInputField = (label, type, name, placeholder, required = false, additionalProps = {}) => (
+  const renderInputField = (
+    label,
+    type,
+    name,
+    placeholder,
+    required = false,
+    additionalprops = {}
+  ) => (
     <InputContainer>
-      <StyledLabel htmlFor={name}>{label}{required && "*"}</StyledLabel>
+      <StyledLabel htmlFor={name}>
+        {label}
+        {required && "*"}
+      </StyledLabel>
       <StyledInput
         type={type}
         id={name}
@@ -46,7 +55,7 @@ export default function PlantForm({ handleSubmit, plantData }) {
         value={formData[name]}
         onChange={handleChange}
         required={required}
-        {...additionalProps}
+        {...additionalprops}
       />
     </InputContainer>
   );
@@ -94,7 +103,7 @@ export default function PlantForm({ handleSubmit, plantData }) {
             formData={formData}
             handleChange={handleChange}
             required={false}
-            additionalProps={{ min: 1 }}
+            additionalprops={{ min: 1 }}
           />
           <RenderInputField
             label={"Kaufpreis (in €)"}
@@ -104,7 +113,7 @@ export default function PlantForm({ handleSubmit, plantData }) {
             formData={formData}
             handleChange={handleChange}
             required={false}
-            additionalProps={{ min: 0, step: "any" }}
+            additionalprops={{ min: 0, step: "any" }}
           />
         </SmallInputWrapper>
         <RenderInputField
@@ -115,9 +124,11 @@ export default function PlantForm({ handleSubmit, plantData }) {
           formData={formData}
           handleChange={handleChange}
           required={false}
-          />
+        />
         <InputContainerFile>
-          <StyledFileUploadLabel htmlFor="picture">Bild hochladen</StyledFileUploadLabel>
+          <StyledFileUploadLabel htmlFor="picture">
+            Bild hochladen
+          </StyledFileUploadLabel>
           <StyledInput type="file" id="picture" name="picture" />
         </InputContainerFile>
 
@@ -143,7 +154,7 @@ export default function PlantForm({ handleSubmit, plantData }) {
           formData={formData}
           handleChange={handleChange}
           required={true}
-          additionalProps={{ min: 1 }}
+          additionalprops={{ min: 1 }}
         />
         <InputContainer>
           <StyledLabel htmlFor="lastwatering">Letztes Umtopfen*</StyledLabel>
@@ -212,7 +223,7 @@ const InputContainerFile = styled.div`
 const StyledInput = styled.input`
   width: 100%;
   padding: 0.5rem;
-  border: 1px solid #CECECE;
+  border: 1px solid #cecece;
   border-radius: 5px;
   font-family: poppins;
   font-size: 0.9rem;
@@ -221,7 +232,7 @@ const StyledInput = styled.input`
 const StyledDateInput = styled.input`
   width: 50%;
   padding: 0.5rem;
-  border: 1px solid #CECECE;
+  border: 1px solid #cecece;
   border-radius: 5px;
   font-family: poppins;
   font-size: 0.9rem;
@@ -230,7 +241,7 @@ const StyledDateInput = styled.input`
 const StyledTextArea = styled.textarea`
   width: 100%;
   padding: 0.5rem;
-  border: 1px solid #CECECE;
+  border: 1px solid #cecece;
   border-radius: 5px;
   font-family: poppins;
   font-size: 0.9rem;

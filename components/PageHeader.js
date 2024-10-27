@@ -81,7 +81,7 @@ const Headline = styled.h1`
   padding: 0;
   margin: 0;
   top: 0.7rem;
-  right: 8rem;
+  right: 4.7rem;
   color: var(--white-font-and-icon-color);
   font-size: var(--font-size-header);
   font-family: "Poppins", sans-serif;

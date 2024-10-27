@@ -10,11 +10,13 @@ import { IoArrowBackOutline } from "react-icons/io5";
 import { useSession } from "next-auth/react";
 import NeedToLogin from "@/components/NeedToLoginScreen";
 import { useRouter } from "next/router";
+import { MdCameraswitch } from "react-icons/md";
 
 const QrScanner = dynamic(() => import("react-qr-scanner"), { ssr: false });
 
 export default function Scan() {
   const [result, setResult] = useState(null);
+  const [isFrontCamera, setIsFrontCamera] = useState(false);
   const { data: session } = useSession();
   const router = useRouter();
 
@@ -29,7 +31,7 @@ export default function Scan() {
 
   function handleScan(result) {
     if (result && result.text) {
-      setResult(result.text); // Nur den QR-Code-Inhalt setzen
+      setResult(result.text); 
       console.log(result.text);
     }
   }
@@ -40,6 +42,11 @@ export default function Scan() {
 
   function handleRouteToPlant() {
     router.push(`/${result}`);
+  }
+
+  function toggleCamera() {
+    setIsFrontCamera(!isFrontCamera);
+    console.log('test');
   }
 
   return (
@@ -53,7 +60,14 @@ export default function Scan() {
       </NavigationContainer>
       <Navbar />
       <ScanContainer>
-        <StyledScanner delay={300} onError={handleError} onScan={handleScan} />
+        <StyledScanner 
+        delay={300} 
+        onError={handleError} 
+        onScan={handleScan}  
+        constraints={{
+            video: { facingMode: isFrontCamera ? "user" : "environment" }
+          }}/>
+       <StyledButton onClick={toggleCamera}><ReactIconChangeCamera IconComponent={MdCameraswitch}></ReactIconChangeCamera></StyledButton>
         <p>
           {result
             ? handleRouteToPlant()
@@ -70,6 +84,15 @@ const StyledScanner = styled(QrScanner)`
   border: 2px solid var(--dark-font-color);
   box-shadow: 0 0 10px 1px rgba(0, 0, 0, 0.2);
 `;
+
+const ReactIconChangeCamera = styled(ReactIcon)`
+  font-size: 2rem;
+  margin: 0rem;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+`;
+
 
 const ReactIconArrowBack = styled(ReactIcon)`
   font-size: 2rem;
@@ -105,4 +128,13 @@ const IconContainer = styled(Link)`
   border-bottom-right-radius: 12px;
   height: 55%;
   text-decoration: none;
+`;
+
+const StyledButton = styled.button`
+  background-color: transparent;
+  color: white;
+  border: none;
+  border-radius: 0.3rem;
+  cursor: pointer;
+  margin-top: 1rem;
 `;

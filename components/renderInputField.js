@@ -1,23 +1,34 @@
 import styled from "styled-components";
 
-export default function RenderInputField({name, label, type, placeholder, formData, handleChange, required, ...additionalProps}) {
-    return(
-        <InputContainer>
-          <StyledLabel htmlFor={name}>{label}{required && "*"}</StyledLabel>
-          <StyledInput
-            type={type}
-            id={name}
-            name={name}
-            placeholder={placeholder}
-            value={formData[name]}
-            onChange={handleChange}
-            required={required}
-            {...additionalProps}
-          />
-        </InputContainer>
-    )
+export default function RenderInputField({
+  name,
+  label,
+  type,
+  placeholder,
+  formData,
+  handleChange,
+  required,
+  ...additionalprops
+}) {
+  return (
+    <InputContainer>
+      <StyledLabel htmlFor={name}>
+        {label}
+        {required && "*"}
+      </StyledLabel>
+      <StyledInput
+        type={type}
+        id={name}
+        name={name}
+        placeholder={placeholder}
+        value={formData[name]}
+        onChange={handleChange}
+        required={required}
+        {...additionalprops}
+      />
+    </InputContainer>
+  );
 }
-
 
 const StyledLabel = styled.label`
   color: var(--dark-font-color);
@@ -33,7 +44,7 @@ const InputContainer = styled.div`
 const StyledInput = styled.input`
   width: 100%;
   padding: 0.5rem;
-  border: 1px solid #CECECE;
+  border: 1px solid #cecece;
   border-radius: 5px;
   font-family: poppins;
   font-size: 0.9rem;
