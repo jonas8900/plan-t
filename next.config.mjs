@@ -6,7 +6,6 @@ const withPWA = withPWAInit({
   dest: "public",
 });
 
-// Next.js configuration
 const nextConfig = {
   images: {
     domains: ['lh3.googleusercontent.com'],
@@ -15,7 +14,7 @@ const nextConfig = {
     if (!isServer) {
       config.plugins.push(
         new InjectManifest({
-          swSrc: './service-worker.js', 
+          swSrc: './public/service-worker.js', 
           swDest: 'service-worker.js',      
         })
       );
