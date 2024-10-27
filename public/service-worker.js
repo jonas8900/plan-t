@@ -1,16 +1,11 @@
+self.addEventListener('install', (event) => {
+  console.log('Service Worker installing.');
+});
 
-import { precacheAndRoute } from 'workbox-precaching';
-import { registerRoute } from 'workbox-routing';
-import { StaleWhileRevalidate } from 'workbox-strategies';
+self.addEventListener('activate', (event) => {
+  console.log('Service Worker activating.');
+});
 
-precacheAndRoute(self.__WB_MANIFEST || []);
-
-
-registerRoute(
-  ({ request }) => request.destination === 'image',
-  new StaleWhileRevalidate({
-    cacheName: 'images-cache',
-  })
-);
-
-
+self.addEventListener('fetch', (event) => {
+  console.log('Fetching:', event.request.url);
+});
