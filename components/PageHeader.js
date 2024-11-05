@@ -25,8 +25,6 @@ export default function PageHeader() {
     }
   };
 
- console.log(session);
-
   return (
     <Section>
       <Headline>Plan-T</Headline>

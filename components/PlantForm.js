@@ -1,8 +1,12 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import styled from "styled-components";
 import RenderInputField from "./renderInputField";
+import Image from "next/image";
+import { IoMdCloseCircle } from "react-icons/io";
+import { set } from "mongoose";
+import CustomModal from "./CustomModal";
 
-export default function PlantForm({ handleSubmit, plantData }) {
+export default function PlantForm({ handleSubmit, plantData, handleDeleteFile }) {
   const initialFormState = {
     plantname: "",
     planttype: "",
@@ -11,17 +15,29 @@ export default function PlantForm({ handleSubmit, plantData }) {
     purchaseprice: "",
     plantprocurement: "",
     lastwatering: "",
+    file: "",
     wateringinterval: "",
     repotting: "",
   };
 
   const [formData, setFormData] = useState(initialFormState);
+  const [file, setFile] = useState(null);
+  const [modalOpen, setModalOpen] = useState(false);
+  const fileInputRef = useRef(null);
+
 
   useEffect(() => {
     if (plantData) {
       setFormData((prevData) => ({ ...prevData, ...plantData }));
     }
   }, [plantData]);
+
+  useEffect(() => {
+    if (file === null && fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  }, [file]);
+
 
   function handleChange(e) {
     const { name, value } = e.target;
@@ -34,31 +50,33 @@ export default function PlantForm({ handleSubmit, plantData }) {
     return isNaN(date) ? "" : date.toISOString().split("T")[0];
   }
 
-  const renderInputField = (
-    label,
-    type,
-    name,
-    placeholder,
-    required = false,
-    additionalprops = {}
-  ) => (
-    <InputContainer>
-      <StyledLabel htmlFor={name}>
-        {label}
-        {required && "*"}
-      </StyledLabel>
-      <StyledInput
-        type={type}
-        id={name}
-        name={name}
-        placeholder={placeholder}
-        value={formData[name]}
-        onChange={handleChange}
-        required={required}
-        {...additionalprops}
-      />
-    </InputContainer>
-  );
+  function handleFileChange(event) {
+    
+    const selectedFile = event.target.files[0];
+    
+
+
+    if (selectedFile) {
+      if (selectedFile.size > 3 * 1024 * 1024) {
+        alert("Datei ist zu groß. Maximale Größe ist 3MB.");
+        return;
+      }
+      setFile(URL.createObjectURL(selectedFile));
+      setFormData((prevData) => ({ ...prevData, file: selectedFile.name }));
+    } 
+  }
+
+  function handleEmptyImage() {
+    if(plantData && plantData.file) {
+      if(file === null) {
+        handleDeleteFile();
+      }
+    }
+    setFile(null);
+    setModalOpen(false);
+    
+  }
+
 
   return (
     <Section>
@@ -126,12 +144,39 @@ export default function PlantForm({ handleSubmit, plantData }) {
           required={false}
         />
         <InputContainerFile>
-          <StyledFileUploadLabel htmlFor="picture">
+          <StyledFileUploadLabel htmlFor="image">
             Bild hochladen
           </StyledFileUploadLabel>
-          <StyledInput type="file" id="picture" name="picture" />
+          <StyledInput 
+          type="file" 
+          id="image" 
+          name="image" 
+          accept="image/*"
+          formData={formData}
+          onChange={handleFileChange}
+          ref={fileInputRef}
+          disabled={plantData.file ? true : false}
+          />
+          {plantData.file && (
+            <p>Um ein neues Bild hochzuladen, muss das alte entfernt werden</p>
+          )}
         </InputContainerFile>
-
+        {(file || (plantData && plantData.file)) && (
+        <InputContainer>
+          <StyledPreviewImageContainer>
+            <ReactIcon onClick={() => setModalOpen(true)} />
+            <StyledPreviewImage
+              src={file ? file : plantData.file}
+              alt="Vorschau"
+              width={200}
+              height={200}
+            />
+          </StyledPreviewImageContainer>
+        </InputContainer>
+        )}
+        {modalOpen && (
+          <CustomModal message={"Wenn Sie auf Bestätigen drücken, wird ihr bisheriges Bild gelöscht"} onCancel={() => setModalOpen(false)} onConfirm={handleEmptyImage} />
+        )}
         <HeadlineAddPlant>Intervalldaten</HeadlineAddPlant>
         <InputContainer>
           <StyledLabel htmlFor="lastwatering">Letztes Gießen*</StyledLabel>
@@ -229,6 +274,16 @@ const StyledInput = styled.input`
   font-size: 0.9rem;
 `;
 
+const StyledPreviewImageContainer = styled.div`
+  position: relative;
+`;
+
+const StyledPreviewImage = styled(Image)`
+  width: 100%;
+  height: auto;
+  border-radius: 12px;
+`;
+
 const StyledDateInput = styled.input`
   width: 50%;
   padding: 0.5rem;
@@ -260,4 +315,12 @@ const Button = styled.button`
   border-radius: 5px;
   margin-top: 1rem;
   width: 100%;
+`;
+
+const ReactIcon = styled(IoMdCloseCircle)`
+  font-size: 2rem;
+  color: #CA3838;;
+  position: absolute;
+  top: -1rem;
+  right: -1rem;
 `;

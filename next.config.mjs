@@ -7,7 +7,19 @@ const withPWA = withPWAInit({
 
 const nextConfig = {
   images: {
-    domains: ['lh3.googleusercontent.com'],
+    remotePatterns: [
+      {
+      
+        protocol: 'https',
+        hostname: 'unique-plant-image-bucket.s3.eu-north-1.amazonaws.com',
+        pathname: '/plants/**', 
+      },
+      {
+        protocol: 'https',
+        hostname: 'lh3.googleusercontent.com', 
+        pathname: '**', 
+      },
+    ],
   },
 };
 

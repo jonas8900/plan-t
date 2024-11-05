@@ -94,6 +94,7 @@ console.log(data);
               headline={plant.plantname}
               subheadline={plant.planttype}
               key={index}
+              imageUrl={plant.file}
               handleClickedPlant={handleClickedPlant}
               plantId={plant._id}
             />

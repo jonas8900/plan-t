@@ -4,9 +4,7 @@ const MONGODB_URI = process.env.MONGODB_URI;
 const MONGODB_NAME = process.env.DATABASE_NAME;
 
 if (!MONGODB_URI) {
-  throw new Error(
-    "Please define the MONGODB_URI environment variable inside .env.local"
-  );
+  throw new Error("Bitte definiere die MONGODB_URI-Umgebungsvariable in .env.local");
 }
 
 let cached = global.mongoose;
@@ -16,29 +14,35 @@ if (!cached) {
 }
 
 async function dbConnect() {
+  console.log('dbConnect called');
   if (cached.conn) {
+    console.log('Reusing existing connection');
     return cached.conn;
   }
+
 
   if (!cached.promise) {
     const opts = {
       dbName: MONGODB_NAME,
       bufferCommands: false,
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
     };
 
     cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongoose) => {
+      console.log('New connection established');
       return mongoose;
     });
   }
 
   try {
-    cached.conn = await cached.promise;
+    cached.conn = await cached.promise; 
   } catch (e) {
-    cached.promise = null;
-    throw e;
+    cached.promise = null; 
+    throw e; 
   }
 
-  return cached.conn;
+  return cached.conn; 
 }
 
 export default dbConnect;

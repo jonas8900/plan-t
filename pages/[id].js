@@ -129,7 +129,7 @@ export default function PlantDetails() {
           <PlantDescription>{data.description}</PlantDescription>
           <StyledButton onClick={toggleModal}>Update eintragen</StyledButton>
           <PlantDetailsContainer>
-          <PlantImage src="/images/plant-4427146_640.jpg" alt="Plant image" width={100} height={100}/>
+          <PlantImage src={data.file ? data.file : "/images/placeholder.jpg"} alt="Plant image" width={100} height={100}/>
         <DetailsContainer>
           <DetailsCustomFlexContainer>
             {data.size && (

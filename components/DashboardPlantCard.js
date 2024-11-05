@@ -12,13 +12,14 @@ export default function DashboardPlantCard({
   href,
   handleClickedPlant,
   plantId,
+  imageUrl,
 }) {
 
 
   return (
     <PlantCard>
       <PlantImage
-        src="/images/plant-4427146_640.jpg"
+        src={imageUrl ? imageUrl : "/images/placeholder.jpg"}
         alt="Plant image"
         width={100}
         height={100}

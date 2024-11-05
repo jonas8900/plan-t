@@ -22,25 +22,58 @@ export default function ChangePlant() {
     const formData = new FormData(event.target);
     const data = Object.fromEntries(formData);
 
-    console.log(data);
 
-    const response = await fetch(`/api/changePlant?id=${id}`, {
-      method: "PUT",
-      headers: {
-       "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
+    if(data.hasOwnProperty("file") || data.hasOwnProperty("image")) {
+      const response = await fetch(`/api/changePlantWithFile?id=${id}`, {
+        method: "PUT",
+        body: formData,
+      });
+  
+      if (!response.ok) {
+        alert("Es ist ein fehler aufgetreten, bitte versuche es erneut");
+      } else {
+        alert("Job wurde erfolgreich hinzugefügt");
+        router.push("/");
+      }
+  
+      event.target.reset();
+
+      
+    } else {
+      const response = await fetch(`/api/changePlant?id=${id}`, {
+        method: "PUT",
+        headers: {
+         "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+  
+      if (!response.ok) {
+        alert("Es ist ein fehler aufgetreten, bitte versuche es erneut");
+      } else {
+        alert("Job wurde erfolgreich hinzugefügt");
+        router.push("/");
+      }
+  
+      event.target.reset();
+    }
+}
+
+
+  async function handleDeleteFile() {
+
+    const response = await fetch(`/api/deleteFile?id=${id}`, {
+      method: "DELETE",
     });
 
     if (!response.ok) {
       alert("Es ist ein fehler aufgetreten, bitte versuche es erneut");
     } else {
-      alert("Job wurde erfolgreich hinzugefügt");
-            router.push("/");
+      alert("Datei wurde erfolgreich gelöscht");
     }
+  }
 
-    event.target.reset();
-}
+
 
 
   return (
@@ -52,7 +85,7 @@ export default function ChangePlant() {
         </IconContainer>
         <PageViewer>Pflanze ändern</PageViewer>
       </NavigationContainer>
-      <PlantForm handleSubmit={handleSubmit} plantData={data}/>
+      <PlantForm handleSubmit={handleSubmit} plantData={data} handleDeleteFile={handleDeleteFile}/>
       <Navbar />
     </>
   );

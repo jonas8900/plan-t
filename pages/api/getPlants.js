@@ -4,6 +4,8 @@ import { getSession } from "next-auth/react";
 
 export default async function handler(request, response) {
     await dbConnect();
+    
+ 
 
     const session = await getSession({ req: request });
 
@@ -12,6 +14,7 @@ export default async function handler(request, response) {
     }
 
     const userId = session.user.id; 
+
 
     if (request.method === "GET") {
         try {
