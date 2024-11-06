@@ -6,7 +6,7 @@ import { IoMdCloseCircle } from "react-icons/io";
 import { set } from "mongoose";
 import CustomModal from "./CustomModal";
 
-export default function PlantForm({ handleSubmit, plantData = {}, handleDeleteFile }) {
+export default function PlantForm({ handleSubmit, plantData, handleDeleteFile }) {
   const initialFormState = {
     plantname: "",
     planttype: "",
@@ -20,6 +20,10 @@ export default function PlantForm({ handleSubmit, plantData = {}, handleDeleteFi
     repotting: "",
   };
 
+  if(!plantData) {
+    plantData = {};
+  }
+
   const [formData, setFormData] = useState(initialFormState);
   const [file, setFile] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
@@ -27,7 +31,7 @@ export default function PlantForm({ handleSubmit, plantData = {}, handleDeleteFi
 
 
   useEffect(() => {
-    if (plantData) {
+    if (Object.keys(plantData).length > 0) {
       setFormData((prevData) => ({ ...prevData, ...plantData }));
     }
   }, [plantData]);

@@ -23,44 +23,15 @@ export default function AddPlants() {
   }
 
 
-//   async function handleSubmit(event) {
-//     event.preventDefault();
-
-//     const formData = new FormData(event.target);
-//     const data = Object.fromEntries(formData);
-
-//     data.userId = session.user.id;
-
-//     console.log(data);
-
-//     const response = await fetch("/api/addPlant", {
-//       method: "POST",
-//       headers: {
-//        "Content-Type": "application/json",
-//       },
-//       body: JSON.stringify(data),
-//     });
-
-//     if (!response.ok) {
-//       alert("Es ist ein fehler aufgetreten, bitte versuche es erneut");
-//     } else {
-//       alert("Pflanze wurde erfolgreich hinzugefügt");
-//             router.push("/");
-//     }
-
-//     event.target.reset();
-// }
-
-
 async function handleSubmit(event) {
   event.preventDefault();
 
   const formData = new FormData(event.target);
-  formData.append("userId", session.user.id); // Benutzer-ID hinzufügen
+  formData.append("userId", session.user.id); 
 
   const response = await fetch("/api/addPlant", {
     method: "POST",
-    body: formData, // Körper der Anfrage als FormData
+    body: formData, 
   });
 
   if (!response.ok) {
@@ -70,7 +41,7 @@ async function handleSubmit(event) {
     router.push("/");
   }
 
-  // event.target.reset();
+  event.target.reset();
 }
 
 
