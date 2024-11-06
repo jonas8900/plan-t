@@ -6,7 +6,7 @@ import { IoMdCloseCircle } from "react-icons/io";
 import { set } from "mongoose";
 import CustomModal from "./CustomModal";
 
-export default function PlantForm({ handleSubmit, plantData, handleDeleteFile }) {
+export default function PlantForm({ handleSubmit, plantData = {}, handleDeleteFile }) {
   const initialFormState = {
     plantname: "",
     planttype: "",
@@ -166,7 +166,7 @@ export default function PlantForm({ handleSubmit, plantData, handleDeleteFile })
           <StyledPreviewImageContainer>
             <ReactIcon onClick={() => setModalOpen(true)} />
             <StyledPreviewImage
-              src={file ? file : plantData.file}
+              src={file ? file : plantData?.file}
               alt="Vorschau"
               width={200}
               height={200}
