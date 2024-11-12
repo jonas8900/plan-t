@@ -30,6 +30,10 @@ export default function Alarm() {
     );
   }
 
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
 
   const toggleModal = () => {
     if (isModalOpen) {
@@ -53,15 +57,8 @@ export default function Alarm() {
     const formData = new FormData(event.target);
     const Data = Object.fromEntries(formData);
 
-    console.log(Data);
   }
 
-  const mapArray = data.map((plant) => {
-    console.log(plant.plantname);
-    console.log(plant._id);
-  }
-  );
-  console.log(mapArray);
 
       return (
         <>
