@@ -1,4 +1,3 @@
-// Modal.js
 import styled, { keyframes } from "styled-components";
 import { IoCloseSharp } from "react-icons/io5";
 import ReactIcon from "@/components/Reacticon";

@@ -74,11 +74,6 @@ export default function PlantDetails() {
     const formData = new FormData(event.target);
     const data = Object.fromEntries(formData);
 
-    if(data.userId !== session.user.id) {
-      alert("Du hast keine Berechtigung für diese Aktion");
-      return false;
-    }
-
     const response = await fetch(`/api/changePlantDates?id=${id}`, {
       method: "PUT",
       headers: {
@@ -89,9 +84,11 @@ export default function PlantDetails() {
   
     if (!response.ok) {
       alert("Es ist ein fehler aufgetreten, bitte versuche es erneut");
+      console.log("Fehler");
     } else {
       await response.json(); 
       alert("Daten wurden erfolgreich aktualisiert");
+      console.log("Fehler");
       toggleModal();
     }
   }

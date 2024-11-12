@@ -4,6 +4,7 @@ import styled from "styled-components";
 import ReactIcon from "@/components/Reacticon";
 import Link from "next/link";
 import { FaPrint } from "react-icons/fa";
+import { BsQrCode } from "react-icons/bs";
 
 export default function DashboardPlantCard({
   headline,
@@ -38,7 +39,7 @@ export default function DashboardPlantCard({
       <ActionWrapper>
         <Button href={href}>Details</Button>
         <ButtonToPrintQRCode onClick={() => handleClickedPlant(plantId)}  href="/scan">
-          <ReactIconScan IconComponent={FaPrint}/>
+          <ReactIconScan IconComponent={BsQrCode}/>
         </ButtonToPrintQRCode>
       </ActionWrapper>
     </PlantCard>
@@ -50,6 +51,8 @@ const PlantImage = styled(Image)`
   height: 100%;
   width: 100%;
   grid-area: 1 / 1 / 3 / 2;
+  border-top-left-radius: 9px;
+  border-bottom-left-radius: 9px;
 `;
 
 const PlantCard = styled.div`
@@ -71,7 +74,7 @@ const ContentWrapper = styled.div`
 `;
 
 const Headline = styled.h1`
-  font-size: 1.3rem;
+  font-size: 16px;
   color: var(--white-font-and-icon-color);
   font-weight: 500;
   margin: 0;
@@ -79,7 +82,7 @@ const Headline = styled.h1`
 `;
 
 const Subheadline = styled.h2`
-  font-size: 1rem;
+  font-size: 13px;
   color: var(--white-font-and-icon-color);
   font-weight: 400;
   margin: 0 0 0.5rem 0;
@@ -102,11 +105,12 @@ const Button = styled(Link)`
   border-radius: 0.75rem;
   width: 40%;
   height: 60%;
+  font-size: 0.85rem;
   text-align: center;
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 0.5rem;
+  padding: 0.8rem;
   cursor: pointer;
   text-decoration: none;
 `;
@@ -119,12 +123,12 @@ const ButtonToPrintQRCode = styled.button`
 `;
 
 const ReactIconScan = styled(ReactIcon)`
-    color: var(--dark-brown-color);
-    font-size: 2rem;
+    color: var(--white-font-and-icon-color);
+    font-size: 1.7rem;
     display: flex;
     justify-content: center;
     align-items: center;
-    margin: 0.35rem;
+    margin: 0.6rem 0.35rem 0.35rem 0;
     `;
 
 

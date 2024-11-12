@@ -23,7 +23,7 @@ const DetailsWrapper = styled.div`
 `;
 
 const Paragraph = styled.p`
-    font-size: 0.8rem;
+    font-size: 12px;
     margin: 0;
     color: var(--white-font-and-icon-color);
 `;

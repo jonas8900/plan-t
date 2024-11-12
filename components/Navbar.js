@@ -71,7 +71,7 @@ const Nav = styled.nav`
 const List = styled.ul`
   list-style: none;
   margin: 0;
-  padding: 1rem;
+  padding: 0rem 1.7rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
