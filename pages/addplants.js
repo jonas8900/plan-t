@@ -29,6 +29,28 @@ async function handleSubmit(event) {
   const formData = new FormData(event.target);
   formData.append("userId", session.user.id); 
 
+  if(formData.get("image").name === "") {
+    const data = Object.fromEntries(formData);
+
+
+    const response = await fetch("/api/addPlantWithoutImage", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    });
+  
+    if (!response.ok) {
+      alert("Es ist ein Fehler aufgetreten, bitte versuche es erneut");
+    } else {
+      alert("Pflanze wurde erfolgreich hinzugefügt");
+      router.push("/");
+    }
+    return
+  }
+
+
   const response = await fetch("/api/addPlant", {
     method: "POST",
     body: formData, 

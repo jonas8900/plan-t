@@ -24,6 +24,7 @@ export default async function handler(request, response) {
 		maxFileSize: 3 * 1024 * 1024,
 	});
 
+
     form.parse(request, async (err, fields, files) => {
       if (err) {
 		if(err.code === "LIMIT_FILE_SIZE") {
@@ -33,16 +34,12 @@ export default async function handler(request, response) {
         return response.status(400).json({ error: "Fehler beim Verarbeiten der Formulardaten." });
       }
 
-      console.log("Fields:", fields);
-      console.log("Files:", files);
-
       const { userId, ...plantData } = fields;
 
       const plantInfo = {};
       for (const [key, value] of Object.entries(plantData)) {
         plantInfo[key] = value[0]; 
       }
-      
       
       const file = files.image[0]; 
 
