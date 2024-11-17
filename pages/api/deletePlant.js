@@ -14,17 +14,19 @@ export default async function handler(request, response) {
         try {
             const plant = await Plant.findByIdAndDelete(id);
 
-            const plantFilePath = plant.file;
-            const urlParts = new URL(plantFilePath);
-            const key = urlParts.pathname.substring(1); 
-
-            const params = {
-                Bucket: process.env.AWS_S3_BUCKET_NAME,
-                Key: key,
-            };
-
-            await s3.deleteObject(params).promise();
-
+            if(plant.file) {
+                const plantFilePath = plant.file;
+                const urlParts = new URL(plantFilePath);
+                const key = urlParts.pathname.substring(1); 
+    
+                const params = {
+                    Bucket: process.env.AWS_S3_BUCKET_NAME,
+                    Key: key,
+                };
+    
+                await s3.deleteObject(params).promise();
+            }
+           
             response.status(200).json({ success: true });
         } catch (error) {
             console.error(error);

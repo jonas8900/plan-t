@@ -22,8 +22,7 @@ export default function ChangePlant() {
     const formData = new FormData(event.target);
     const data = Object.fromEntries(formData);
 
-
-    if(data.hasOwnProperty("file") || data.hasOwnProperty("image")) {
+    if(data.image.name !== "") {
       const response = await fetch(`/api/changePlantWithFile?id=${id}`, {
         method: "PUT",
         body: formData,
@@ -32,7 +31,7 @@ export default function ChangePlant() {
       if (!response.ok) {
         alert("Es ist ein fehler aufgetreten, bitte versuche es erneut");
       } else {
-        alert("Job wurde erfolgreich hinzugefügt");
+        alert("Pflanze wurde erfolgreich geändert");
         router.push("/");
       }
   
@@ -51,7 +50,7 @@ export default function ChangePlant() {
       if (!response.ok) {
         alert("Es ist ein fehler aufgetreten, bitte versuche es erneut");
       } else {
-        alert("Job wurde erfolgreich hinzugefügt");
+        alert("Pflanze wurde erfolgreich geändert");
         router.push("/");
       }
   
