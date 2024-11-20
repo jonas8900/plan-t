@@ -2,7 +2,7 @@ import dbConnect from "../../db/connect";
 import Plant from "../../db/models/Plant";
 import formidable from "formidable";
 import AWS from "aws-sdk";
-import sharp from "sharp"; 
+import sharp from "sharp";
 import fs from "fs";
 import path from "path";
 
@@ -39,10 +39,10 @@ export default async function handler(request, response) {
 
       const plantInfo = {};
       for (const [key, value] of Object.entries(plantData)) {
-        plantInfo[key] = value[0];
+        plantInfo[key] = value[0]; 
       }
 
-      const file = files.image[0]; 
+      const file = files.image?.[0];
       if (!file) {
         return response.status(400).json({ error: "Keine Datei hochgeladen." });
       }
@@ -55,46 +55,44 @@ export default async function handler(request, response) {
 
       try {
 
-
-
-
-
-        const allowedExtensions = ['.jpg', '.jpeg', '.png', '.gif'];
+        const allowedExtensions = [".jpg", ".jpeg", ".png", ".gif"];
         const fileExtension = path.extname(file.originalFilename).toLowerCase();
         if (!allowedExtensions.includes(fileExtension)) {
           return response.status(400).json({ error: "Nur Bilddateien sind erlaubt." });
         }
 
-        
+     
         const optimizedFilePath = path.join(path.dirname(filePath), `${Date.now()}-optimized.webp`);
-        await sharp(filePath, { failOnError: false })
+
+        const sharpPromise = sharp(filePath, { failOnError: false })
           .rotate()
           .resize({ width: 900 }) 
           .webp({ quality: 90 }) 
           .toFile(optimizedFilePath);
 
-        
-        const optimizedFileStream = fs.createReadStream(optimizedFilePath);
-        const s3Response = await s3
-          .upload({
+        const s3Promise = sharpPromise.then(async () => {
+          const optimizedFileStream = fs.createReadStream(optimizedFilePath);
+          return s3.upload({
             Bucket: process.env.AWS_S3_BUCKET_NAME,
             Key: `plants/${Date.now()}-${file.originalFilename}.webp`, 
             Body: optimizedFileStream,
-            ContentType: "image/webp", 
-          })
-          .promise();
+            ContentType: "image/webp",
+          }).promise();
+        });
+
+        const [s3Response] = await Promise.all([s3Promise]);
 
         const imageUrl = s3Response.Location;
 
-        
         const plant = await Plant.create({ ...plantInfo, userId: userId[0], file: imageUrl });
 
-        
         fs.unlink(filePath, (err) => {
-          if (err) console.error("Fehler beim Löschen der Datei:", err);
+          if (err) console.error("Fehler beim Löschen der Originaldatei:", err);
         });
-        
-        fs.unlinkSync(optimizedFilePath); 
+
+        fs.unlink(optimizedFilePath, (err) => {
+          if (err) console.error("Fehler beim Löschen der optimierten Datei:", err);
+        });
 
         response.status(200).json({ status: "Pflanze erfolgreich erstellt.", plant });
       } catch (error) {
