@@ -21,7 +21,7 @@ export const config = {
 export default async function handler(request, response) {
   await dbConnect();
 
-  const { method, body, query } = request;
+  const { method, query } = request;
   const { id } = query;
 
   if (method === "PUT") {
