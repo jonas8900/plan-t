@@ -67,8 +67,16 @@ export default async function handler(request, response) {
 
 
         try {
+          const allowedExtensions = ['.jpg', '.jpeg', '.png', '.gif'];
+          const fileExtension = path.extname(file.originalFilename).toLowerCase();
+          if (!allowedExtensions.includes(fileExtension)) {
+            return response.status(400).json({ error: "Nur Bilddateien sind erlaubt." });
+          }
+
+
           const optimizedFilePath = path.join(path.dirname(filePath), `${Date.now()}-optimized.webp`);
-          await sharp(filePath)
+          await sharp(filePath, { failOnError: false })
+            .rotate()
             .resize({ width: 900 }) 
             .webp({ quality: 90 }) 
             .toFile(optimizedFilePath);  

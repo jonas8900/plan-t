@@ -156,6 +156,7 @@ export default function PlantForm({ handleSubmit, plantData, handleDeleteFile })
           id="image" 
           name="image" 
           accept="image/*"
+          
           formData={formData}
           onChange={handleFileChange}
           ref={fileInputRef}
