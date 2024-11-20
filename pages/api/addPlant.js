@@ -71,7 +71,6 @@ export default async function handler(request, response) {
           .rotate()
           .resize({ width: 900 }) 
           .webp({ quality: 90 }) 
-          .withMetadata({ exif: false })
           .toFile(optimizedFilePath);
 
         
