@@ -40,6 +40,7 @@ export default function App({ Component, pageProps: { session, ...pageProps } })
                 <GlobalStyle />
                 <SWRConfig value={{ fetcher }}>
                     <Component {...pageProps}/>
+                    <SpeedInsights />
                 </SWRConfig>
             </SessionProvider>
         </>
