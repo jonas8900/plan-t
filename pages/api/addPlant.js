@@ -66,21 +66,23 @@ export default async function handler(request, response) {
 
         const sharpPromise = sharp(filePath, { failOnError: false })
           .rotate()
-          .resize({ width: 900 }) 
-          .webp({ quality: 90 }) 
+          .resize({ width: 900 })
+          .webp({ quality: 90 })
           .toFile(optimizedFilePath);
 
-        const s3Promise = sharpPromise.then(async () => {
+        const s3UploadPromise = sharpPromise.then(async () => {
           const optimizedFileStream = fs.createReadStream(optimizedFilePath);
           return s3.upload({
             Bucket: process.env.AWS_S3_BUCKET_NAME,
-            Key: `plants/${Date.now()}-${file.originalFilename}.webp`, 
+            Key: `plants/${Date.now()}-${file.originalFilename}.webp`,
             Body: optimizedFileStream,
-            ContentType: "image/webp",
+            ContentType: "image/webp", 
+            CacheControl: 'public, max-age=31536000',
           }).promise();
         });
 
-        const [s3Response] = await Promise.all([s3Promise]);
+        const [s3Response] = await Promise.all([s3UploadPromise]); 
+
 
         const imageUrl = s3Response.Location;
 

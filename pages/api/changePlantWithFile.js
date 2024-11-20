@@ -86,6 +86,7 @@ export default async function handler(request, response) {
             Key: `plants/${Date.now()}-${file.originalFilename}.webp`,
             Body: fileStream,
             ContentType: "image/webp", 
+            CacheControl: 'public, max-age=31536000', 
           }).promise();
 
           imageUrl = s3Response.Location;
