@@ -2,6 +2,7 @@ import Head from "next/head";
 import GlobalStyle from "../styles";
 import { SWRConfig } from "swr/_internal";
 import { SessionProvider } from "next-auth/react";
+import { SpeedInsights } from "@vercel/speed-insights/next"
 
 const fetcher = (url) => fetch(url).then((response) => response.json());
 
