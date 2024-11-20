@@ -3,6 +3,8 @@ import Plant from "../../db/models/Plant";
 import formidable from "formidable";
 import AWS from "aws-sdk";
 import fs from "fs";
+import sharp from "sharp"; 
+import path from "path";
 
 AWS.config.update({
   region: process.env.AWS_REGION,
@@ -63,16 +65,21 @@ export default async function handler(request, response) {
           return response.status(400).json({ error: "Der Dateipfad ist undefiniert." });
         }
 
-        console.log("File Path:", filePath);
 
         try {
-          const fileStream = fs.createReadStream(filePath);
+          const optimizedFilePath = path.join(path.dirname(filePath), `${Date.now()}-optimized.webp`);
+          await sharp(filePath)
+            .resize({ width: 900 }) 
+            .webp({ quality: 90 }) 
+            .toFile(optimizedFilePath);  
+
+          const fileStream = fs.createReadStream(optimizedFilePath);
 
           const s3Response = await s3.upload({
             Bucket: process.env.AWS_S3_BUCKET_NAME,
-            Key: `plants/${file.originalFilename}`,
+            Key: `plants/${Date.now()}-${file.originalFilename}.webp`,
             Body: fileStream,
-            ContentType: file.mimetype,
+            ContentType: "image/webp", 
           }).promise();
 
           imageUrl = s3Response.Location;

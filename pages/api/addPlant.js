@@ -2,7 +2,9 @@ import dbConnect from "../../db/connect";
 import Plant from "../../db/models/Plant";
 import formidable from "formidable";
 import AWS from "aws-sdk";
+import sharp from "sharp"; 
 import fs from "fs";
+import path from "path";
 
 AWS.config.update({
   region: process.env.AWS_REGION,
@@ -21,15 +23,14 @@ export default async function handler(request, response) {
 
   if (request.method === "POST") {
     const form = formidable({
-		maxFileSize: 3 * 1024 * 1024,
-	});
-
+      maxFileSize: 3 * 1024 * 1024, 
+    });
 
     form.parse(request, async (err, fields, files) => {
       if (err) {
-		if(err.code === "LIMIT_FILE_SIZE") {
-			return response.status(400).json({ error: "Die Datei ist zu groß. Bitte wählen Sie eine Datei, die kleiner als 3 MB ist." });
-		}
+        if (err.code === "LIMIT_FILE_SIZE") {
+          return response.status(400).json({ error: "Die Datei ist zu groß. Bitte wählen Sie eine Datei, die kleiner als 3 MB ist." });
+        }
         console.error(err);
         return response.status(400).json({ error: "Fehler beim Verarbeiten der Formulardaten." });
       }
@@ -38,37 +39,50 @@ export default async function handler(request, response) {
 
       const plantInfo = {};
       for (const [key, value] of Object.entries(plantData)) {
-        plantInfo[key] = value[0]; 
+        plantInfo[key] = value[0];
       }
-      
-      const file = files.image[0]; 
 
+      const file = files.image[0]; 
       if (!file) {
         return response.status(400).json({ error: "Keine Datei hochgeladen." });
       }
 
-      const filePath = file.filepath; 
+      const filePath = file.filepath;
 
-   
       if (!filePath) {
         return response.status(400).json({ error: "Der Dateipfad ist undefiniert." });
       }
 
-      console.log("File Path:", filePath); 
-
       try {
-        const fileStream = fs.createReadStream(filePath); 
+        
+        const optimizedFilePath = path.join(path.dirname(filePath), `${Date.now()}-optimized.webp`);
+        await sharp(filePath)
+          .resize({ width: 900 }) 
+          .webp({ quality: 90 }) 
+          .toFile(optimizedFilePath);
 
-        const s3Response = await s3.upload({
-          Bucket: process.env.AWS_S3_BUCKET_NAME,
-          Key: `plants/${file.originalFilename}`, 
-          Body: fileStream,
-          ContentType: file.mimetype,
-        }).promise();
+        
+        const optimizedFileStream = fs.createReadStream(optimizedFilePath);
+        const s3Response = await s3
+          .upload({
+            Bucket: process.env.AWS_S3_BUCKET_NAME,
+            Key: `plants/${Date.now()}-${file.originalFilename}.webp`, 
+            Body: optimizedFileStream,
+            ContentType: "image/webp", 
+          })
+          .promise();
 
         const imageUrl = s3Response.Location;
 
+        
         const plant = await Plant.create({ ...plantInfo, userId: userId[0], file: imageUrl });
+
+        
+        fs.unlink(filePath, (err) => {
+          if (err) console.error("Fehler beim Löschen der Datei:", err);
+        });
+        
+        fs.unlinkSync(optimizedFilePath); 
 
         response.status(200).json({ status: "Pflanze erfolgreich erstellt.", plant });
       } catch (error) {
