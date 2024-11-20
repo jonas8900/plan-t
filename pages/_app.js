@@ -3,6 +3,7 @@ import GlobalStyle from "../styles";
 import { SWRConfig } from "swr/_internal";
 import { SessionProvider } from "next-auth/react";
 import { SpeedInsights } from "@vercel/speed-insights/next"
+import { Analytics } from "@vercel/analytics/react"
 
 const fetcher = (url) => fetch(url).then((response) => response.json());
 
@@ -41,6 +42,7 @@ export default function App({ Component, pageProps: { session, ...pageProps } })
                 <SWRConfig value={{ fetcher }}>
                     <Component {...pageProps}/>
                     <SpeedInsights />
+                    <Analytics />
                 </SWRConfig>
             </SessionProvider>
         </>
