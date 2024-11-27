@@ -11,10 +11,7 @@ AWS.config.update({
   region: process.env.AWS_REGION,
 });
 
-const s3 = new AWS.S3({
-  endpoint: new AWS.Endpoint(`https://s3-accelerate.amazonaws.com`),
-  signatureVersion: 'v4',
-});
+const s3 = new AWS.S3();
 
 export const config = {
   api: {
