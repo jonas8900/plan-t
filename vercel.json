@@ -2,10 +2,5 @@
     "crons": [{
       "path": "/api/checkAlarms",
       "schedule": "* * * * *"
-    }],
-    "functions": {
-      "api/*.js": {
-        "memory": 3009
-      }
-    }
-  }
+    }]
+}
