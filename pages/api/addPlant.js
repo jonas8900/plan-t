@@ -69,7 +69,7 @@ export default async function handler(request, response) {
         const start = Date.now();
         const sharpPromise = sharp(filePath, { failOnError: false })
           .rotate()
-          .resize({ width: 900 })
+          .resize({ width: 500 })
           .webp({ quality: 80 })
           .toFile(optimizedFilePath);
           console.log("Sharp processing time:", Date.now() - start, "ms");

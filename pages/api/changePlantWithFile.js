@@ -75,8 +75,8 @@ export default async function handler(request, response) {
           const optimizedFilePath = path.join(path.dirname(filePath), `${Date.now()}-optimized.webp`);
           await sharp(filePath, { failOnError: false })
             .rotate()
-            .resize({ width: 900 }) 
-            .webp({ quality: 10 }) 
+            .resize({ width: 500 }) 
+            .webp({ quality: 80 }) 
             .toFile(optimizedFilePath);  
             console.log(new Date(), "Fileconvert with sharp after...");
 
