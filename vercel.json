@@ -4,10 +4,7 @@
       "schedule": "* * * * *"
     }],
     "functions": {
-      "api/addPlant.js": {
-        "memory": 3009
-      },
-      "api/changePlantWithFile.js": {
+      "api/*.js": {
         "memory": 3009
       }
     }
