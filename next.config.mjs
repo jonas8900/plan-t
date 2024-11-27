@@ -15,6 +15,11 @@ const nextConfig = {
       },
       {
         protocol: "https",
+        hostname: "unique-plant-images-bucket.s3-accelerate.amazonaws.com",
+        pathname: "/plants/**",
+      },
+      {
+        protocol: "https",
         hostname: "lh3.googleusercontent.com",
         pathname: "**",
       },
