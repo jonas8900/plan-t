@@ -64,11 +64,13 @@ export default async function handler(request, response) {
      
         const optimizedFilePath = path.join(path.dirname(filePath), `${Date.now()}-optimized.webp`);
 
+        const start = Date.now();
         const sharpPromise = sharp(filePath, { failOnError: false })
           .rotate()
           .resize({ width: 900 })
           .webp({ quality: 80 })
           .toFile(optimizedFilePath);
+          console.log("Sharp processing time:", Date.now() - start, "ms");
 
         const s3UploadPromise = sharpPromise.then(async () => {
           const optimizedFileStream = fs.createReadStream(optimizedFilePath);
@@ -80,8 +82,18 @@ export default async function handler(request, response) {
             CacheControl: 'public, max-age=31536000',
           }).promise();
         });
-
+        const uploadStart = Date.now()
         const [s3Response] = await Promise.all([s3UploadPromise]); 
+        console.log("S3 upload time:", Date.now() - uploadStart, "ms");
+
+        // const sharpPromise = sharp(filePath, { failOnError: false }).rotate().resize({ width: 900 }).webp({ quality: 80 }).toFile(optimizedFilePath);
+        // const optimizedFileStreamPromise = sharpPromise.then(() => fs.createReadStream(optimizedFilePath));
+        // const s3UploadPromise = optimizedFileStreamPromise.then((optimizedFileStream) =>
+        //   s3.upload({ Bucket: process.env.AWS_S3_BUCKET_NAME, Key: `plants/${Date.now()}-${file.originalFilename}.webp`, Body: optimizedFileStream, ContentType: "image/webp", CacheControl: 'public, max-age=31536000' }).promise()
+        // );
+
+        // const [s3Response] = await Promise.all([s3UploadPromise]);
+
 
 
         const imageUrl = s3Response.Location;
