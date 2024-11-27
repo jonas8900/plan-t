@@ -66,21 +66,21 @@ export default async function handler(request, response) {
         }
 
         try {
-          const allowedExtensions = ['.jpg', '.jpeg', '.png', '.gif'];
+          const allowedExtensions = ['.jpg', '.jpeg', '.png', '.webp'];
           const fileExtension = path.extname(file.originalFilename).toLowerCase();
           if (!allowedExtensions.includes(fileExtension)) {
             return response.status(400).json({ error: "Nur Bilddateien sind erlaubt." });
           }
-
+          console.log(new Date(), "Fileconvert with sharp before...");
           const optimizedFilePath = path.join(path.dirname(filePath), `${Date.now()}-optimized.webp`);
           await sharp(filePath, { failOnError: false })
             .rotate()
             .resize({ width: 900 }) 
-            .webp({ quality: 90 }) 
+            .webp({ quality: 10 }) 
             .toFile(optimizedFilePath);  
+            console.log(new Date(), "Fileconvert with sharp after...");
 
           const fileStream = fs.createReadStream(optimizedFilePath);
-
           const s3Response = await s3.upload({
             Bucket: process.env.AWS_S3_BUCKET_NAME,
             Key: `plants/${Date.now()}-${file.originalFilename}.webp`,
@@ -88,7 +88,7 @@ export default async function handler(request, response) {
             ContentType: "image/webp", 
             CacheControl: 'public, max-age=31536000', 
           }).promise();
-
+          console.log(new Date(), "upload to bucket");
           imageUrl = s3Response.Location;
         } catch (error) {
           console.error(error);

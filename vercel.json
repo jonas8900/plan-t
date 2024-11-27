@@ -1,0 +1,14 @@
+{
+    "crons": [{
+      "path": "/api/checkAlarms",
+      "schedule": "* * * * *"
+    }],
+    "functions": {
+      "api/addPlant.js": {
+        "memory": 3009
+      },
+      "api/changePlantWithFile.js": {
+        "memory": 3009
+      }
+    }
+  }

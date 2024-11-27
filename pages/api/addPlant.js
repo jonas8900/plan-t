@@ -67,7 +67,7 @@ export default async function handler(request, response) {
         const sharpPromise = sharp(filePath, { failOnError: false })
           .rotate()
           .resize({ width: 900 })
-          .webp({ quality: 90 })
+          .webp({ quality: 80 })
           .toFile(optimizedFilePath);
 
         const s3UploadPromise = sharpPromise.then(async () => {

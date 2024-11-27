@@ -5,7 +5,7 @@ export default function RenderInputField({
   label,
   type,
   placeholder,
-  formData,
+  formdata,
   handleChange,
   required,
   ...additionalprops
@@ -21,7 +21,7 @@ export default function RenderInputField({
         id={name}
         name={name}
         placeholder={placeholder}
-        value={formData[name]}
+        value={formdata[name]}
         onChange={handleChange}
         required={required}
         {...additionalprops}

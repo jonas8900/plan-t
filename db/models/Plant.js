@@ -15,6 +15,9 @@ const plantSchema = new Schema({
   lastwatering: { type: Date, required: true },
   description: { type: String, required: false },
   userId: { type: String, required: true, index: true },
+  alarmTime: { type: String, required: false },
+  alarmActive: { type: Boolean, required: false },
+  userSubscription: { type: Object, required: false },
 });
 
 const connection = mongoose.createConnection(process.env.MONGODB_URI, { dbName: "plantsDatabase" });

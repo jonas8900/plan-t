@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, use } from "react";
 import styled from "styled-components";
 import RenderInputField from "./renderInputField";
 import Image from "next/image";
@@ -41,6 +41,9 @@ export default function PlantForm({ handleSubmit, plantData, handleDeleteFile })
       fileInputRef.current.value = "";
     }
   }, [file]);
+
+  useEffect(() => {
+  }, [fileInputRef]);
 
 
   function handleChange(e) {
@@ -91,7 +94,7 @@ export default function PlantForm({ handleSubmit, plantData, handleDeleteFile })
           type={"text"}
           name={"plantname"}
           placeholder={"z.B. Bonsai"}
-          formData={formData}
+          formdata={formData}
           handleChange={handleChange}
           required={true}
         />
@@ -100,7 +103,7 @@ export default function PlantForm({ handleSubmit, plantData, handleDeleteFile })
           type={"text"}
           name={"planttype"}
           placeholder={"z.B. Juniperus chinensis"}
-          formData={formData}
+          formdata={formData}
           handleChange={handleChange}
           required={true}
         />
@@ -122,7 +125,7 @@ export default function PlantForm({ handleSubmit, plantData, handleDeleteFile })
             type={"number"}
             name={"size"}
             placeholder={"cm"}
-            formData={formData}
+            formdata={formData}
             handleChange={handleChange}
             required={false}
             additionalprops={{ min: 1 }}
@@ -132,7 +135,7 @@ export default function PlantForm({ handleSubmit, plantData, handleDeleteFile })
             type={"number"}
             name={"purchaseprice"}
             placeholder={"€"}
-            formData={formData}
+            formdata={formData}
             handleChange={handleChange}
             required={false}
             additionalprops={{ min: 0, step: "any" }}
@@ -143,7 +146,7 @@ export default function PlantForm({ handleSubmit, plantData, handleDeleteFile })
           type={"text"}
           name={"plantprocurement"}
           placeholder={"z.B. Ableger"}
-          formData={formData}
+          formdata={formData}
           handleChange={handleChange}
           required={false}
         />
@@ -156,8 +159,7 @@ export default function PlantForm({ handleSubmit, plantData, handleDeleteFile })
           id="image" 
           name="image" 
           accept="image/*"
-          
-          formData={formData}
+          formdata={formData}
           onChange={handleFileChange}
           ref={fileInputRef}
           disabled={plantData.file ? true : false}
@@ -201,7 +203,7 @@ export default function PlantForm({ handleSubmit, plantData, handleDeleteFile })
           type={"number"}
           name={"wateringinterval"}
           placeholder={"z.B. 2"}
-          formData={formData}
+          formdata={formData}
           handleChange={handleChange}
           required={true}
           additionalprops={{ min: 1 }}

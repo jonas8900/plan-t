@@ -2,25 +2,25 @@ import PageHeader from "@/components/PageHeader";
 import PageViewer from "@/components/PageViewer";
 import ReactIcon from "@/components/Reacticon";
 import Link from "next/link";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { IoArrowBackOutline } from "react-icons/io5";
 import styled from "styled-components";
 import Navbar from "@/components/Navbar";
 import { useSession } from "next-auth/react";
 import NeedToLogin from "@/components/NeedToLoginScreen";
-import { useRouter } from "next/router";
 import NoAlarmsSet from "@/components/NoAlarmsSet";
-import CustomModal from "@/components/CustomModal";
-import { set } from "mongoose";
 import Modal from "@/components/InfoModal";
 import useSWR from "swr";
+import { isPushSupported, requestPushSubscription } from "@/utils";
+import { MdAddCircle } from "react-icons/md";
 
 export default function Alarm() {
   const { data: session } = useSession();
-  const router = useRouter();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
-  const { data, isLoading } = useSWR("/api/getPlantsWithoutDetails");
+  const { data: plants, isLoading } = useSWR("/api/getPlantsWithoutDetails");
+  const { data: alarmData } = useSWR("/api/getAlarms");
+
 
   if(!session) {
     return (
@@ -51,13 +51,73 @@ export default function Alarm() {
     setIsModalOpen(!isModalOpen);
   }
 
-  function handleSubmit(event) {
+
+
+  async function handleSubmit(event) {
     event.preventDefault();
+    console.log('saved');
     
     const formData = new FormData(event.target);
-    const Data = Object.fromEntries(formData);
+    const data = Object.fromEntries(formData);
+  
+    const alarmTime = new Date(data.alarmtime).toLocaleString([], { 
+      year: 'numeric', 
+      month: '2-digit', 
+      day: '2-digit', 
+      hour: '2-digit', 
+      minute: '2-digit' 
+    });
 
+    console.log(alarmTime);
+
+  
+    try {
+      const subscription = await requestPushSubscription();
+
+      if (subscription) {
+        const saveSubscriptionResponse = await fetch('/api/saveSubscription', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            plantId: data.alarmplant,
+            subscription,
+          }),
+        });
+  
+        if (!saveSubscriptionResponse.ok) {
+          console.log('Fehler beim Speichern der Subscription');
+          throw new Error('Fehler beim Speichern der Subscription');
+        }
+  
+        const addAlarmResponse = await fetch('/api/addAlarm', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            plantId: data.alarmplant,
+            alarmTime,
+            alarmActive: true,
+          }),
+        });
+        console.log(addAlarmResponse);
+  
+        if (!addAlarmResponse.ok) {
+          throw new Error('Fehler beim Hinzufügen des Alarms');
+        }
+  
+        alert('Alarm erfolgreich gesetzt!');
+      } else {
+        alert('Push-Benachrichtigungen konnten nicht aktiviert werden');
+      }
+    } catch (error) {
+      console.error(error);
+      alert('Es gab ein Problem beim Hinzufügen des Alarms.');
+    }
   }
+  
 
 
       return (
@@ -70,7 +130,25 @@ export default function Alarm() {
             <PageViewer>Alarm</PageViewer>
         </NavigationContainer>
         <StyledWrapper>
-        <NoAlarmsSet onClick={handleModal}/>
+        {alarmData && alarmData.length > 0 ? (
+          <>
+            <StyledButton onClick={handleModal}>
+              <ReactIconAdd IconComponent={MdAddCircle}/>
+            </StyledButton>
+            {alarmData.map((alarm) => (
+              <AlarmDiv key={alarm._id}>
+               <p>{alarm.alarmTime.split(",")[1]}</p>
+                <p>{alarm.plantname}</p>
+                <p>{alarm.alarmTime.split(",")[0]}</p>
+                <div>
+                  <input type="radio" defaultChecked={alarm.alarmActive} />
+                </div>
+              </AlarmDiv>
+            ))}
+          </>
+        ) : (
+          <NoAlarmsSet onClick={handleModal} />
+        )}
         {isModalOpen && (
           <Modal
             isOpen={isModalOpen}
@@ -79,17 +157,19 @@ export default function Alarm() {
             modaltext="Lege hier deine Alarme an, um dich an deine täglichen Aufgaben zu erinnern."
             modalheadline="Alarme"
           >
-          <form onSubmit={handleSubmit}>
-            <StyledLabel htmlFor="alarmtime">Wähle deine Pflanze</StyledLabel>
-            <StyledInputSelect type="time" id="alarmtime" name="alarmtime" required>
-              {data && data.map((plant) => (
+          <StyledForm onSubmit={handleSubmit}>
+            <StyledLabel htmlFor="alarmplant">Wähle deine Pflanze</StyledLabel>
+            <StyledInputSelect id="alarmplant" name="alarmplant" required>
+              {plants && plants.map((plant) => (
                 <StyledInputOption key={plant._id} value={plant._id}>{plant.plantname}</StyledInputOption>
               ))}
             </StyledInputSelect>
-            <StyledLabel htmlFor="alarmtime">Alarmzeit:</StyledLabel>
-            <StyledAlarmInput type="time" id="alarmtime" name="alarmtime" required></StyledAlarmInput>
-            <button type="submit">Alarm hinzufügen</button>
-          </form>
+              <StyledLabel htmlFor="alarmtime">Alarmzeit:</StyledLabel>
+              <StyledDateInputWrapper>
+              <StyledAlarmInput type="datetime-local" id="alarmtime" name="alarmtime" required></StyledAlarmInput>
+              <StyledSubmitButton type="submit">Alarm hinzufügen</StyledSubmitButton>
+            </StyledDateInputWrapper>
+          </StyledForm>
         </Modal>
         )}
         </StyledWrapper>
@@ -99,11 +179,26 @@ export default function Alarm() {
 } 
 
 
+const StyledForm = styled.form`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin: auto;
+`;
+
+const StyledDateInputWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+`;
+
 const StyledLabel = styled.label`
   color: var(--dark-font-color);
   display: flex; 
   flex-direction: column;
   margin-top: 1rem;
+  align-self: flex-start;
   `;
 
 const StyledInputOption = styled.option`
@@ -125,12 +220,14 @@ const StyledInputSelect = styled.select`
   `;
 
   const StyledAlarmInput = styled.input`
-    width: 40%;
-    padding: 0.5rem;
-    border: 1px solid #cecece;
-    border-radius: 5px;
-    font-family: poppins;
-    font-size: 0.9rem;
+  width: 40%;
+  padding: 0.5rem;
+  border: 1px solid #cecece;
+  border-radius: 5px;
+  font-family: poppins;
+  font-size: 0.9rem;
+  width: fit-content;
+  margin-bottom: 2rem;
   `;
 
 
@@ -143,6 +240,14 @@ const StyledWrapper = styled.div`
   height: 100%;
   `;
 
+const StyledSubmitButton = styled.button`
+  background-color: var(--dark-green-color);
+  color: white;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 5px;
+
+`;
 
 const ReactIconArrowBack = styled(ReactIcon)`
   font-size: 2rem;
@@ -159,22 +264,41 @@ const NavigationContainer = styled.div`
 `;
 
 const IconContainer = styled(Link)`
-    display: flex;
-    align-items: center;
-    background-color: var(--dark-green-color);
-    padding-left: 0.5rem;
-    padding-right: 0.5rem;
-    border-top-right-radius: 12px;
-    border-bottom-right-radius: 12px;
-    height: 55%;
-    text-decoration: none;
+  display: flex;
+  align-items: center;
+  background-color: var(--dark-green-color);
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+  border-top-right-radius: 12px;
+  border-bottom-right-radius: 12px;
+  height: 55%;
+  text-decoration: none;
 `;
 
-const Headline = styled.h1`
-    color: var(--Darker-font-color, #555);
-    text-align: center;
-    font-size: 1.4375rem;
-    font-weight: 500;
-    margin: 2rem auto 3rem auto;
+const AlarmDiv = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 92%;
+  border: 1px solid rgba(0, 0, 0, 0.13);
+  border-radius: 20px;
+  margin: 1rem;
+  padding: 0.5rem;
+  box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.13);
 `;
 
+const StyledButton = styled.button`
+  background-color: transparent;
+  cursor: pointer;
+  border-radius: 50%;
+  border: none;
+`;
+
+const ReactIconAdd = styled(ReactIcon)`
+  font-size: 3rem;
+  color: var(--dark-green-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+`;
