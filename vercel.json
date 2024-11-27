@@ -4,11 +4,5 @@
       "path": "/api/checkAlarms",
       "schedule": "* * * * *"  
     }
-  ],
-  "functions": {
-    "pages/api/**/*.js": {
-      "memory": 2048,  
-      "maxDuration": 60  
-    }
-  }
+  ]
 }
