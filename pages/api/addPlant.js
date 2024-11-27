@@ -19,14 +19,16 @@ export const config = {
 };
 
 export default async function handler(request, response) {
-  await dbConnect();
 
   if (request.method === "POST") {
+
     const form = formidable({
       maxFileSize: 3 * 1024 * 1024, 
     });
 
+    const starttimeFormidable = Date.now();
     form.parse(request, async (err, fields, files) => {
+      console.log("Formidable processing time:", Date.now() - starttimeFormidable, "ms");
       if (err) {
         if (err.code === "LIMIT_FILE_SIZE") {
           return response.status(400).json({ error: "Die Datei ist zu groß. Bitte wählen Sie eine Datei, die kleiner als 3 MB ist." });
@@ -98,7 +100,10 @@ export default async function handler(request, response) {
 
         const imageUrl = s3Response.Location;
 
+        const startDBConnecttime = Date.now();
+        await dbConnect();
         const plant = await Plant.create({ ...plantInfo, userId: userId[0], file: imageUrl });
+        console.log("DB connection time:", Date.now() - startDBConnecttime, "ms");
 
         fs.unlink(filePath, (err) => {
           if (err) console.error("Fehler beim Löschen der Originaldatei:", err);
