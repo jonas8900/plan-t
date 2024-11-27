@@ -74,24 +74,19 @@ export default async function handler(request, response) {
           .toFile(optimizedFilePath);
           console.log("Sharp processing time:", Date.now() - start, "ms");
 
-        const optimizedFileStreamPromise = sharpPromise.then(() => fs.createReadStream(optimizedFilePath));
-
-    
-        const s3UploadPromise = optimizedFileStreamPromise.then((optimizedFileStream) =>
-            s3.upload({ Bucket: process.env.AWS_S3_BUCKET_NAME, 
-            Key: `plants/${Date.now()}-${file.originalFilename}.webp`, 
-            Body: optimizedFileStream, ContentType: "image/webp", 
-            CacheControl: 'public, max-age=31536000' })
-            .promise()
-          );
-
-        const [s3Response] = await Promise.all([s3UploadPromise]);
+        const s3UploadPromise = sharpPromise.then(async () => {
+          const optimizedFileStream = fs.createReadStream(optimizedFilePath);
+          return s3.upload({
+            Bucket: process.env.AWS_S3_BUCKET_NAME,
+            Key: `plants/${Date.now()}-${file.originalFilename}.webp`,
+            Body: optimizedFileStream,
+            ContentType: "image/webp", 
+            CacheControl: 'public, max-age=31536000',
+          }).promise();
+        });
+        const uploadStart = Date.now()
+        const [s3Response] = await Promise.all([s3UploadPromise]); 
         console.log("S3 upload time:", Date.now() - uploadStart, "ms");
-
-
-     
-
-
 
         const imageUrl = s3Response.Location;
 
