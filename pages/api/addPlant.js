@@ -5,6 +5,8 @@
 // import sharp from "sharp";
 // import fs from "fs";
 // import path from "path";
+// import stream from "stream";
+// import util from "util";
 
 // AWS.config.update({
 //   region: process.env.AWS_REGION,
@@ -19,16 +21,15 @@
 // };
 
 // export default async function handler(request, response) {
-
 //   if (request.method === "POST") {
-
 //     const form = formidable({
-//       maxFileSize: 3 * 1024 * 1024, 
+//       maxFileSize: 3 * 1024 * 1024,
 //     });
 
 //     const starttimeFormidable = Date.now();
 //     form.parse(request, async (err, fields, files) => {
 //       console.log("Formidable processing time:", Date.now() - starttimeFormidable, "ms");
+
 //       if (err) {
 //         if (err.code === "LIMIT_FILE_SIZE") {
 //           return response.status(400).json({ error: "Die Datei ist zu groß. Bitte wählen Sie eine Datei, die kleiner als 3 MB ist." });
@@ -38,10 +39,10 @@
 //       }
 
 //       const { userId, ...plantData } = fields;
-
 //       const plantInfo = {};
+
 //       for (const [key, value] of Object.entries(plantData)) {
-//         plantInfo[key] = value[0]; 
+//         plantInfo[key] = value[0];
 //       }
 
 //       const file = files.image?.[0];
@@ -56,36 +57,28 @@
 //       }
 
 //       try {
-
 //         const allowedExtensions = [".jpg", ".jpeg", ".png", ".gif"];
 //         const fileExtension = path.extname(file.originalFilename).toLowerCase();
 //         if (!allowedExtensions.includes(fileExtension)) {
 //           return response.status(400).json({ error: "Nur Bilddateien sind erlaubt." });
 //         }
 
-     
-//         const optimizedFilePath = path.join(path.dirname(filePath), `${Date.now()}-optimized.webp`);
-
-//         const start = Date.now();
-//         const sharpPromise = sharp(filePath, { failOnError: false })
+//         const sharpStream = sharp(filePath, { failOnError: false })
 //           .rotate()
 //           .resize({ width: 500 })
 //           .webp({ quality: 80 })
-//           .toFile(optimizedFilePath);
-//           console.log("Sharp processing time:", Date.now() - start, "ms");
+//           .pipe(new stream.PassThrough());
 
-//         const s3UploadPromise = sharpPromise.then(async () => {
-//           const optimizedFileStream = fs.createReadStream(optimizedFilePath);
-//           return s3.upload({
-//             Bucket: process.env.AWS_S3_BUCKET_NAME,
-//             Key: `plants/${Date.now()}-${file.originalFilename}.webp`,
-//             Body: optimizedFileStream,
-//             ContentType: "image/webp", 
-//             CacheControl: 'public, max-age=31536000',
-//           }).promise();
-//         });
-//         const uploadStart = Date.now()
-//         const [s3Response] = await Promise.all([s3UploadPromise]); 
+//         const uploadParams = {
+//           Bucket: process.env.AWS_S3_BUCKET_NAME,
+//           Key: `plants/${Date.now()}-${file.originalFilename}.webp`,
+//           Body: sharpStream,
+//           ContentType: "image/webp",
+//           CacheControl: 'public, max-age=31536000',
+//         };
+
+//         const uploadStart = Date.now();
+//         const s3Response = await s3.upload(uploadParams).promise();
 //         console.log("S3 upload time:", Date.now() - uploadStart, "ms");
 
 //         const imageUrl = s3Response.Location;
@@ -94,14 +87,6 @@
 //         await dbConnect();
 //         const plant = await Plant.create({ ...plantInfo, userId: userId[0], file: imageUrl });
 //         console.log("DB connection time:", Date.now() - startDBConnecttime, "ms");
-
-//         fs.unlink(filePath, (err) => {
-//           if (err) console.error("Fehler beim Löschen der Originaldatei:", err);
-//         });
-
-//         fs.unlink(optimizedFilePath, (err) => {
-//           if (err) console.error("Fehler beim Löschen der optimierten Datei:", err);
-//         });
 
 //         response.status(200).json({ status: "Pflanze erfolgreich erstellt.", plant });
 //       } catch (error) {
@@ -115,14 +100,15 @@
 //   }
 // }
 
+
+
 import dbConnect from "../../db/connect";
 import Plant from "../../db/models/Plant";
 import formidable from "formidable";
 import AWS from "aws-sdk";
 import sharp from "sharp";
-import fs from "fs";
-import path from "path";
 import stream from "stream";
+import path from "path"; 
 import util from "util";
 
 AWS.config.update({
@@ -140,7 +126,7 @@ export const config = {
 export default async function handler(request, response) {
   if (request.method === "POST") {
     const form = formidable({
-      maxFileSize: 3 * 1024 * 1024,
+      maxFileSize: 3 * 1024 * 1024, 
     });
 
     const starttimeFormidable = Date.now();
@@ -159,7 +145,7 @@ export default async function handler(request, response) {
       const plantInfo = {};
 
       for (const [key, value] of Object.entries(plantData)) {
-        plantInfo[key] = value[0];
+        plantInfo[key] = value[0]; 
       }
 
       const file = files.image?.[0];
@@ -167,7 +153,7 @@ export default async function handler(request, response) {
         return response.status(400).json({ error: "Keine Datei hochgeladen." });
       }
 
-      const filePath = file.filepath;
+      const filePath = file.filepath; 
 
       if (!filePath) {
         return response.status(400).json({ error: "Der Dateipfad ist undefiniert." });
@@ -180,29 +166,31 @@ export default async function handler(request, response) {
           return response.status(400).json({ error: "Nur Bilddateien sind erlaubt." });
         }
 
+
         const sharpStream = sharp(filePath, { failOnError: false })
           .rotate()
           .resize({ width: 500 })
           .webp({ quality: 80 })
-          .pipe(new stream.PassThrough());
+          .pipe(new stream.PassThrough()); 
 
         const uploadParams = {
           Bucket: process.env.AWS_S3_BUCKET_NAME,
-          Key: `plants/${Date.now()}-${file.originalFilename}.webp`,
+          Key: `plants/${Date.now()}-${file.originalFilename}.webp`, 
           Body: sharpStream,
-          ContentType: "image/webp",
+          ContentType: "image/webp", 
           CacheControl: 'public, max-age=31536000',
         };
 
         const uploadStart = Date.now();
-        const s3Response = await s3.upload(uploadParams).promise();
+        const s3Response = await s3.upload(uploadParams).promise(); 
         console.log("S3 upload time:", Date.now() - uploadStart, "ms");
 
-        const imageUrl = s3Response.Location;
+        const imageUrl = s3Response.Location; 
+
 
         const startDBConnecttime = Date.now();
         await dbConnect();
-        const plant = await Plant.create({ ...plantInfo, userId: userId[0], file: imageUrl });
+        const plant = await Plant.create({ ...plantInfo, userId: userId[0], file: imageUrl }); 
         console.log("DB connection time:", Date.now() - startDBConnecttime, "ms");
 
         response.status(200).json({ status: "Pflanze erfolgreich erstellt.", plant });
