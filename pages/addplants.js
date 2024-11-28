@@ -9,9 +9,11 @@ import { IoArrowBackOutline } from "react-icons/io5";
 import { useRouter } from "next/router";
 import { useSession } from "next-auth/react";
 import NeedToLogin from "@/components/NeedToLoginScreen";
+import { useState } from "react";
 
 export default function AddPlants() {
   const { data: session } = useSession();
+  const [file, setFile] = useState(null);
   const router = useRouter();
 
   if(!session) {
@@ -22,23 +24,49 @@ export default function AddPlants() {
     );
   }
 
+  async function handleSubmit(event) {
+    event.preventDefault();
+  
+    const formData = new FormData(event.target);
+  
+    // Benutzer-ID hinzufügen
+    formData.append("userId", session.user.id);
+  
 
-async function handleSubmit(event) {
-  event.preventDefault();
+    if (file) {
+      if (file instanceof Blob) {
+          const fileWithCorrectType = new File([file], file.name, { type: file.type });
+          formData.set("image", fileWithCorrectType); 
+      } else {
+          formData.set("image", file); 
+      }
+  }
 
-  const formData = new FormData(event.target);
-  formData.append("userId", session.user.id); 
 
-  if(formData.get("image").name === "") {
-    const data = Object.fromEntries(formData);
-
-
-    const response = await fetch("/api/addPlantWithoutImage", {
+    if (!formData.get("image")) {
+      const data = Object.fromEntries(formData);
+  
+      const response = await fetch("/api/addPlantWithoutImage", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+  
+      if (!response.ok) {
+        alert("Es ist ein Fehler aufgetreten, bitte versuche es erneut");
+      } else {
+        alert("Pflanze wurde erfolgreich hinzugefügt");
+        router.push("/");
+      }
+      return;
+    }
+  
+    // Wenn ein Bild vorhanden ist, sende es mit
+    const response = await fetch("/api/addPlant", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
+      body: formData,
     });
   
     if (!response.ok) {
@@ -47,26 +75,11 @@ async function handleSubmit(event) {
       alert("Pflanze wurde erfolgreich hinzugefügt");
       router.push("/");
     }
-    return
+  
+    // Formular zurücksetzen
+    event.target.reset();
   }
-
-
-  const response = await fetch("/api/addPlant", {
-    method: "POST",
-    body: formData, 
-  });
-
-  if (!response.ok) {
-    alert("Es ist ein Fehler aufgetreten, bitte versuche es erneut");
-  } else {
-    alert("Pflanze wurde erfolgreich hinzugefügt");
-    router.push("/");
-  }
-
-  event.target.reset();
-}
-
-
+  
 
   return (
     <>
@@ -77,7 +90,7 @@ async function handleSubmit(event) {
         </IconContainer>
         <PageViewer>Pflanze anlegen</PageViewer>
       </NavigationContainer>
-      <PlantForm handleSubmit={handleSubmit} />
+      <PlantForm handleSubmit={handleSubmit} setFile={setFile} file={file}/>
       <Navbar />
     </>
   );

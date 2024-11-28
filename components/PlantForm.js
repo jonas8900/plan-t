@@ -1,12 +1,12 @@
-import { useState, useEffect, useRef, use } from "react";
+import { useState, useEffect, useRef } from "react";
 import styled from "styled-components";
 import RenderInputField from "./renderInputField";
 import Image from "next/image";
 import { IoMdCloseCircle } from "react-icons/io";
-import { set } from "mongoose";
 import CustomModal from "./CustomModal";
+import imageCompression from 'browser-image-compression'; // Importiere die Bibliothek
 
-export default function PlantForm({ handleSubmit, plantData, handleDeleteFile }) {
+export default function PlantForm({ handleSubmit, plantData, handleDeleteFile, file, setFile }) {
   const initialFormState = {
     plantname: "",
     planttype: "",
@@ -20,19 +20,17 @@ export default function PlantForm({ handleSubmit, plantData, handleDeleteFile })
     repotting: "",
   };
 
-  if(!plantData) {
+  if (!plantData) {
     plantData = {};
   }
 
   const [formData, setFormData] = useState(initialFormState);
-  const [file, setFile] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
   const fileInputRef = useRef(null);
 
-
   useEffect(() => {
-    if (Object.keys(plantData).length > 0) {
-      setFormData((prevData) => ({ ...prevData, ...plantData }));
+    if (Object.keys(plantData).length > 0 && plantData.file) {
+      setFile(plantData.file);
     }
   }, [plantData]);
 
@@ -40,11 +38,7 @@ export default function PlantForm({ handleSubmit, plantData, handleDeleteFile })
     if (file === null && fileInputRef.current) {
       fileInputRef.current.value = "";
     }
-  }, [file]);
-
-  useEffect(() => {
-  }, [fileInputRef]);
-
+  }, [file, modalOpen]);
 
   function handleChange(e) {
     const { name, value } = e.target;
@@ -57,38 +51,62 @@ export default function PlantForm({ handleSubmit, plantData, handleDeleteFile })
     return isNaN(date) ? "" : date.toISOString().split("T")[0];
   }
 
-  function handleFileChange(event) {
-    
-    const selectedFile = event.target.files[0];
-    
+  function blobToFile(blob, filename) {
+    return new File([blob], filename, { type: blob.type });
+}
 
+  async function handleImageUploadConverter(file) {
+    const options = {
+        maxSizeMB: 0.3,
+        maxWidthOrHeight: 900,
+        useWebWorker: true,
+        fileType: "image/jpeg", 
+        preserveExif: true,
+    };
+
+    try {
+        const compressedBlob = await imageCompression(file, options);
+        const compressedFile = blobToFile(compressedBlob, file.name);
+        console.log(typeof compressedFile, "compressedFile", typeof file, "file");
+
+        return compressedFile; 
+    } catch (error) {
+        console.error("Fehler bei der Komprimierung:", error);
+        return file; 
+    }
+}
+
+  function handleFileChange(event) {
+    const selectedFile = event.target.files[0];
+    console.log(selectedFile);
 
     if (selectedFile) {
       if (selectedFile.size > 3 * 1024 * 1024) {
         alert("Datei ist zu groß. Maximale Größe ist 3MB.");
         return;
       }
-      setFile(URL.createObjectURL(selectedFile));
-      setFormData((prevData) => ({ ...prevData, file: selectedFile.name }));
-    } 
+
+      handleImageUploadConverter(selectedFile).then(compressedFile => {
+        setFile(compressedFile);  
+      });
+    }
   }
+  console.log(file);
 
   function handleEmptyImage() {
-    if(plantData && plantData.file) {
-      if(file === null) {
-        handleDeleteFile();
+    if (plantData && plantData.file) {
+      if (file === null) {
+        handleDeleteFile();  
       }
     }
-    setFile(null);
-    setModalOpen(false);
-    
+    setFile(null);  
+    setModalOpen(false);  
   }
-
 
   return (
     <Section>
       <HeadlineAddPlant>Pflanzendaten</HeadlineAddPlant>
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={(e) => handleSubmit(e, formData)}>
         <RenderInputField
           label={"Name der Pflanze"}
           type={"text"}
@@ -155,31 +173,31 @@ export default function PlantForm({ handleSubmit, plantData, handleDeleteFile })
             Bild hochladen
           </StyledFileUploadLabel>
           <StyledInput 
-          type="file" 
-          id="image" 
-          name="image" 
-          accept="image/*"
-          formdata={formData}
-          onChange={handleFileChange}
-          ref={fileInputRef}
-          disabled={plantData.file ? true : false}
+            type="file" 
+            id="image" 
+            name="image" 
+            accept="image/*"
+            formdata={formData}
+            onChange={handleFileChange}
+            ref={fileInputRef}
+            disabled={plantData.file ? true : false}
           />
           {plantData.file && (
             <p>Um ein neues Bild hochzuladen, muss das alte entfernt werden</p>
           )}
         </InputContainerFile>
         {(file || (plantData && plantData.file)) && (
-        <InputContainer>
-          <StyledPreviewImageContainer>
-            <ReactIcon onClick={() => setModalOpen(true)} />
-            <StyledPreviewImage
-              src={file ? file : plantData?.file}
-              alt="Vorschau"
-              width={200}
-              height={200}
-            />
-          </StyledPreviewImageContainer>
-        </InputContainer>
+          <InputContainer>
+            <StyledPreviewImageContainer>
+              <ReactIcon onClick={() => setModalOpen(true)} />
+              <StyledPreviewImage
+                src={file ? URL.createObjectURL(file) : (plantData?.file || '')}
+                alt="Vorschau"
+                width={200}
+                height={200}
+              />
+            </StyledPreviewImageContainer>
+          </InputContainer>
         )}
         {modalOpen && (
           <CustomModal message={"Wenn Sie auf Bestätigen drücken, wird ihr bisheriges Bild gelöscht"} onCancel={() => setModalOpen(false)} onConfirm={handleEmptyImage} />
@@ -326,7 +344,7 @@ const Button = styled.button`
 
 const ReactIcon = styled(IoMdCloseCircle)`
   font-size: 2rem;
-  color: #CA3838;;
+  color: #CA3838;
   position: absolute;
   top: -1rem;
   right: -1rem;
