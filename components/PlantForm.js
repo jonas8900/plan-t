@@ -63,7 +63,6 @@ export default function PlantForm({ handleSubmit, plantData, handleDeleteFile, f
 }
 
   async function handleImageUploadConverter(file) {
-    console.log(file, "filefunction called");
     const options = {
         maxSizeMB: 0.3,
         quality: 0.8,
@@ -76,7 +75,6 @@ export default function PlantForm({ handleSubmit, plantData, handleDeleteFile, f
     try {
         const compressedBlob = await imageCompression(file, options);
         const compressedFile = blobToFile(compressedBlob, file.name);
-        console.log(typeof compressedFile, "compressedFile", typeof file, "file");
 
         return compressedFile; 
     } catch (error) {
@@ -87,7 +85,6 @@ export default function PlantForm({ handleSubmit, plantData, handleDeleteFile, f
 
   function handleFileChange(event) {
     const selectedFile = event.target.files[0];
-    console.log(selectedFile);
 
     if (selectedFile) {
       if (selectedFile.size > 3 * 1024 * 1024) {
@@ -97,7 +94,6 @@ export default function PlantForm({ handleSubmit, plantData, handleDeleteFile, f
 
       handleImageUploadConverter(selectedFile).then(compressedFile => {
         setFile(compressedFile);  
-        console.log(compressedFile, "compressedFile");
       });
     }
   }
@@ -111,7 +107,6 @@ export default function PlantForm({ handleSubmit, plantData, handleDeleteFile, f
     setFile(null);  
     setModalOpen(false);  
   }
-  console.log(file, "filefunction ends");
 
   return (
     <Section>

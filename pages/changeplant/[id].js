@@ -8,15 +8,22 @@ import styled from "styled-components";
 import { IoArrowBackOutline } from "react-icons/io5";
 import { useRouter } from "next/router";
 import useSWR from "swr";
-import { useState } from "react";
+import { use, useEffect, useState } from "react";
+import { set } from "mongoose";
 
 export default function ChangePlant() {
   const router = useRouter();
   const [file, setFile] = useState(null);
+  const [deletedFile, setDeletedFile] = useState(false);
 
   const { id } = router.query;
   const { data, error, isLoading } = useSWR(id ? `/api/getSinglePlant?id=${id}` : null);
-  console.log(data, "Data");
+
+
+  useEffect(() => {
+    console.log("re-rendered");
+  }, [deletedFile]);
+
 
   async function handleSubmit(event) {
     event.preventDefault();
@@ -33,6 +40,7 @@ export default function ChangePlant() {
       }
   }
 
+
     if(formData.get("image")) {
       const response = await fetch(`/api/changePlantWithFile?id=${id}`, {
         method: "PUT",
@@ -42,6 +50,7 @@ export default function ChangePlant() {
       if (!response.ok) {
         alert("Es ist ein fehler aufgetreten, bitte versuche es erneut");
       } else {
+        setDeletedFile(!deletedFile);
         alert("Pflanze wurde erfolgreich geändert");
         router.push("/");
       }
@@ -81,6 +90,8 @@ export default function ChangePlant() {
     } else {
       alert("Datei wurde erfolgreich gelöscht");
     }
+
+    setDeletedFile(!deletedFile);
   }
 
 
