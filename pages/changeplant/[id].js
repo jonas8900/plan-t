@@ -8,13 +8,15 @@ import styled from "styled-components";
 import { IoArrowBackOutline } from "react-icons/io5";
 import { useRouter } from "next/router";
 import useSWR from "swr";
+import { useState } from "react";
 
 export default function ChangePlant() {
   const router = useRouter();
+  const [file, setFile] = useState(null);
 
   const { id } = router.query;
   const { data, error, isLoading } = useSWR(id ? `/api/getSinglePlant?id=${id}` : null);
-
+  console.log(data, "Data");
 
   async function handleSubmit(event) {
     event.preventDefault();
@@ -22,7 +24,16 @@ export default function ChangePlant() {
     const formData = new FormData(event.target);
     const data = Object.fromEntries(formData);
 
-    if(data.image.name !== "") {
+    if (file) {
+      if (file instanceof Blob) {
+          const fileWithCorrectType = new File([file], file.name, { type: file.type });
+          formData.set("image", fileWithCorrectType); 
+      } else {
+          formData.set("image", file); 
+      }
+  }
+
+    if(formData.get("image")) {
       const response = await fetch(`/api/changePlantWithFile?id=${id}`, {
         method: "PUT",
         body: formData,
@@ -74,7 +85,6 @@ export default function ChangePlant() {
 
 
 
-
   return (
     <>
       <PageHeader />
@@ -84,7 +94,7 @@ export default function ChangePlant() {
         </IconContainer>
         <PageViewer>Pflanze ändern</PageViewer>
       </NavigationContainer>
-      <PlantForm handleSubmit={handleSubmit} plantData={data} handleDeleteFile={handleDeleteFile}/>
+      <PlantForm handleSubmit={handleSubmit} plantData={data} handleDeleteFile={handleDeleteFile} file={file} setFile={setFile}/>
       <Navbar />
     </>
   );

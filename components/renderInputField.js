@@ -5,11 +5,11 @@ export default function RenderInputField({
   label,
   type,
   placeholder,
-  formdata,
+  formData,
   handleChange,
   required,
   ...additionalprops
-}) {
+}) { 
   return (
     <InputContainer>
       <StyledLabel htmlFor={name}>
@@ -21,7 +21,7 @@ export default function RenderInputField({
         id={name}
         name={name}
         placeholder={placeholder}
-        value={formdata[name]}
+        value={formData[name]}
         onChange={handleChange}
         required={required}
         {...additionalprops}

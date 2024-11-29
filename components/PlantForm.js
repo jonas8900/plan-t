@@ -4,7 +4,7 @@ import RenderInputField from "./renderInputField";
 import Image from "next/image";
 import { IoMdCloseCircle } from "react-icons/io";
 import CustomModal from "./CustomModal";
-import imageCompression from 'browser-image-compression'; // Importiere die Bibliothek
+import imageCompression from 'browser-image-compression'; 
 
 export default function PlantForm({ handleSubmit, plantData, handleDeleteFile, file, setFile }) {
   const initialFormState = {
@@ -20,6 +20,8 @@ export default function PlantForm({ handleSubmit, plantData, handleDeleteFile, f
     repotting: "",
   };
 
+
+
   if (!plantData) {
     plantData = {};
   }
@@ -28,11 +30,16 @@ export default function PlantForm({ handleSubmit, plantData, handleDeleteFile, f
   const [modalOpen, setModalOpen] = useState(false);
   const fileInputRef = useRef(null);
 
+
+
   useEffect(() => {
-    if (Object.keys(plantData).length > 0 && plantData.file) {
-      setFile(plantData.file);
+    if (Object.keys(plantData).length > 0) {
+      setFormData(plantData);
     }
   }, [plantData]);
+
+
+
 
   useEffect(() => {
     if (file === null && fileInputRef.current) {
@@ -56,11 +63,13 @@ export default function PlantForm({ handleSubmit, plantData, handleDeleteFile, f
 }
 
   async function handleImageUploadConverter(file) {
+    console.log(file, "filefunction called");
     const options = {
         maxSizeMB: 0.3,
+        quality: 0.8,
         maxWidthOrHeight: 900,
         useWebWorker: true,
-        fileType: "image/jpeg", 
+        fileType: "image/webp", 
         preserveExif: true,
     };
 
@@ -88,10 +97,10 @@ export default function PlantForm({ handleSubmit, plantData, handleDeleteFile, f
 
       handleImageUploadConverter(selectedFile).then(compressedFile => {
         setFile(compressedFile);  
+        console.log(compressedFile, "compressedFile");
       });
     }
   }
-  console.log(file);
 
   function handleEmptyImage() {
     if (plantData && plantData.file) {
@@ -102,6 +111,7 @@ export default function PlantForm({ handleSubmit, plantData, handleDeleteFile, f
     setFile(null);  
     setModalOpen(false);  
   }
+  console.log(file, "filefunction ends");
 
   return (
     <Section>
@@ -112,7 +122,7 @@ export default function PlantForm({ handleSubmit, plantData, handleDeleteFile, f
           type={"text"}
           name={"plantname"}
           placeholder={"z.B. Bonsai"}
-          formdata={formData}
+          formData={formData}
           handleChange={handleChange}
           required={true}
         />
@@ -121,7 +131,7 @@ export default function PlantForm({ handleSubmit, plantData, handleDeleteFile, f
           type={"text"}
           name={"planttype"}
           placeholder={"z.B. Juniperus chinensis"}
-          formdata={formData}
+          formData={formData}
           handleChange={handleChange}
           required={true}
         />
@@ -143,7 +153,7 @@ export default function PlantForm({ handleSubmit, plantData, handleDeleteFile, f
             type={"number"}
             name={"size"}
             placeholder={"cm"}
-            formdata={formData}
+            formData={formData}
             handleChange={handleChange}
             required={false}
             additionalprops={{ min: 1 }}
@@ -153,7 +163,7 @@ export default function PlantForm({ handleSubmit, plantData, handleDeleteFile, f
             type={"number"}
             name={"purchaseprice"}
             placeholder={"€"}
-            formdata={formData}
+            formData={formData}
             handleChange={handleChange}
             required={false}
             additionalprops={{ min: 0, step: "any" }}
@@ -164,7 +174,7 @@ export default function PlantForm({ handleSubmit, plantData, handleDeleteFile, f
           type={"text"}
           name={"plantprocurement"}
           placeholder={"z.B. Ableger"}
-          formdata={formData}
+          formData={formData}
           handleChange={handleChange}
           required={false}
         />
@@ -177,7 +187,7 @@ export default function PlantForm({ handleSubmit, plantData, handleDeleteFile, f
             id="image" 
             name="image" 
             accept="image/*"
-            formdata={formData}
+            formData={formData}
             onChange={handleFileChange}
             ref={fileInputRef}
             disabled={plantData.file ? true : false}
@@ -191,7 +201,7 @@ export default function PlantForm({ handleSubmit, plantData, handleDeleteFile, f
             <StyledPreviewImageContainer>
               <ReactIcon onClick={() => setModalOpen(true)} />
               <StyledPreviewImage
-                src={file ? URL.createObjectURL(file) : (plantData?.file || '')}
+                src={file instanceof File ? URL.createObjectURL(file) : (file || plantData?.file || '')}
                 alt="Vorschau"
                 width={200}
                 height={200}
@@ -221,7 +231,7 @@ export default function PlantForm({ handleSubmit, plantData, handleDeleteFile, f
           type={"number"}
           name={"wateringinterval"}
           placeholder={"z.B. 2"}
-          formdata={formData}
+          formData={formData}
           handleChange={handleChange}
           required={true}
           additionalprops={{ min: 1 }}
