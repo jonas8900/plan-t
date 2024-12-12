@@ -1,7 +1,7 @@
 {
   "crons": [
     {
-      "path": "/api/checkAlarms",
+      "path": "/api/checkAlarms.js",
       "schedule": "* * * * *"  
     }
   ]
