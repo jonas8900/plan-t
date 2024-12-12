@@ -17,6 +17,7 @@
     "@vercel/speed-insights": "^1.1.0",
     "aws-sdk": "^2.1691.0",
     "browser-image-compression": "^2.0.2",
+    "dotenv": "^16.4.7",
     "formidable": "^3.5.2",
     "html2canvas": "^1.4.1",
     "jspdf": "^2.5.2",

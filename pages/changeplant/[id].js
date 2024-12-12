@@ -40,8 +40,7 @@ export default function ChangePlant() {
       }
   }
 
-
-    if(formData.get("image")) {
+    if(formData.get("image") && formData.get("image").size > 0) {
       const response = await fetch(`/api/changePlantWithFile?id=${id}`, {
         method: "PUT",
         body: formData,

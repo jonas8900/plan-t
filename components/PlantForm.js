@@ -20,17 +20,14 @@ export default function PlantForm({ handleSubmit, plantData, handleDeleteFile, f
     repotting: "",
   };
 
-
-
   if (!plantData) {
     plantData = {};
   }
 
   const [formData, setFormData] = useState(initialFormState);
   const [modalOpen, setModalOpen] = useState(false);
+  const [changedFile, setChangedFile] = useState(false);
   const fileInputRef = useRef(null);
-
-
 
   useEffect(() => {
     if (Object.keys(plantData).length > 0) {
@@ -39,6 +36,11 @@ export default function PlantForm({ handleSubmit, plantData, handleDeleteFile, f
   }, [plantData]);
 
 
+  useEffect(() => {
+    if (changedFile) {
+      console.log("file changed");
+    }
+  }, [changedFile]);
 
 
   useEffect(() => {
@@ -50,6 +52,9 @@ export default function PlantForm({ handleSubmit, plantData, handleDeleteFile, f
   function handleChange(e) {
     const { name, value } = e.target;
     setFormData((prevData) => ({ ...prevData, [name]: value }));
+    if(name === "image") {
+      setChangedFile(!changedFile);
+    }
   }
 
   function formatDateString(dateString) {

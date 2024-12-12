@@ -19,13 +19,11 @@ export async function requestPushSubscription() {
       if (permission !== 'granted') {
           throw new Error('Benachrichtigungen sind nicht erlaubt');
       }
-      console.log("Test")
       const registration = await navigator.serviceWorker.ready;
       const subscription = await registration.pushManager.subscribe({
           userVisibleOnly: true,
           applicationServerKey: process.env.NEXT_PUBLIC_VAPID_KEY,
       });
-      console.log("Test2")
       return subscription;
   } catch (error) {
       console.error('Fehler in requestPushSubscription:', error);
