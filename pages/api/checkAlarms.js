@@ -1,3 +1,24 @@
+import Plant from '@/db/models/Plant';
+import webPush from 'web-push';
+
+
+const publicKey = process.env.NEXT_PUBLIC_VAPID_KEY;
+const privateKey = process.env.PRIVATE_VAPID_KEY;
+
+
+if (!publicKey || !privateKey) {
+  console.error('Fehlende VAPID-Schlüssel');
+
+} else {
+  webPush.setVapidDetails(
+    'mailto:jonas.dally@hotmail.de', 
+    publicKey,  
+    privateKey  
+
+  );
+
+}
+
 export default async function handler(req, res) {
   if (req.method !== 'POST' && req.method !== 'GET') {
     return res.status(405).json({ error: 'Methode nicht erlaubt.' });
@@ -5,16 +26,17 @@ export default async function handler(req, res) {
 
   try {
     const now = new Date();
-    const currentDate = `${now.getDate().toString().padStart(2, '0')}.${(now.getMonth() + 1).toString().padStart(2, '0')}.${now.getFullYear()}, ${now.getHours()}:${now.getMinutes().toString().padStart(2, '0')}`;
 
+    const currentDate = `${now.getDate().toString().padStart(2, '0')}.${(now.getMonth() + 1).toString().padStart(2, '0')}.${now.getFullYear()}, ${now.getHours()}:${now.getMinutes().toString().padStart(2, '0')}`;
+    
     const futureTime = new Date(now.getTime() + 5 * 60000);
     const futureTimeString = `${futureTime.getDate().toString().padStart(2, '0')}.${(futureTime.getMonth() + 1).toString().padStart(2, '0')}.${futureTime.getFullYear()}, ${futureTime.getHours()}:${futureTime.getMinutes().toString().padStart(2, '0')}`;
-
-
+    
     const plantsWithAlarms = await Plant.find({
       alarmActive: true,
       alarmTime: { $gte: currentDate, $lte: futureTimeString }
     });
+    
 
     if (plantsWithAlarms.length === 0) {
       console.log("Keine Pflanzen mit aktivem Alarm gefunden.");
