@@ -5,6 +5,7 @@ import { SessionProvider } from "next-auth/react";
 import { SpeedInsights } from "@vercel/speed-insights/next"
 import { Analytics } from "@vercel/analytics/react"
 import { useEffect } from "react";
+import styled from "styled-components";
 
 const fetcher = (url) => fetch(url).then((response) => response.json());
 
@@ -56,7 +57,9 @@ export default function App({ Component, pageProps: { session, ...pageProps } })
             <SessionProvider session={session}>
                 <GlobalStyle />
                 <SWRConfig value={{ fetcher }}>
-                    <Component {...pageProps}/>
+                    <StyledComponent>
+                      <Component {...pageProps}/>
+                    </StyledComponent>
                     <SpeedInsights />
                     <Analytics />
                 </SWRConfig>
@@ -64,3 +67,9 @@ export default function App({ Component, pageProps: { session, ...pageProps } })
         </>
     );
 }
+
+
+const StyledComponent = styled.div`
+   max-width: 770px;
+   margin: 0 auto;
+`;

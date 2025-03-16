@@ -2,7 +2,7 @@ import PageHeader from "@/components/PageHeader";
 import PageViewer from "@/components/PageViewer";
 import ReactIcon from "@/components/Reacticon";
 import Link from "next/link";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { IoArrowBackOutline } from "react-icons/io5";
 import styled from "styled-components";
 import Navbar from "@/components/Navbar";
@@ -13,6 +13,7 @@ import Modal from "@/components/InfoModal";
 import useSWR from "swr";
 import { isPushSupported, requestPushSubscription } from "@/utils";
 import { MdAddCircle } from "react-icons/md";
+import { FaTrash } from "react-icons/fa";
 
 export default function Alarm() {
   const { data: session } = useSession();
@@ -20,6 +21,10 @@ export default function Alarm() {
   const [isClosing, setIsClosing] = useState(false);
   const { data: plants, isLoading } = useSWR("/api/getPlantsWithoutDetails");
   const { data: alarmData } = useSWR("/api/getAlarms");
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [alarmID, setAlarmID] = useState(null);
+  const [isAlarmActive, setIsAlarmActive] = useState({});
+  const timeoutRef = useRef(null);
 
 
   if(!session) {
@@ -35,7 +40,8 @@ export default function Alarm() {
   }
 
 
-  const toggleModal = () => {
+
+  function toggleModal() {
     if (isModalOpen) {
       setIsClosing(true);
       setTimeout(() => {
@@ -50,6 +56,18 @@ export default function Alarm() {
   function handleModal() {
     setIsModalOpen(!isModalOpen);
   }
+
+  function handleTouchStart(id) {
+    timeoutRef.current = setTimeout(() => {
+      setDeleteModalOpen(true);
+      setAlarmID(id);
+    }, 500); 
+  };
+
+  function handleTouchEnd() {
+    clearTimeout(timeoutRef.current);
+  };
+
 
 
 
@@ -67,9 +85,6 @@ export default function Alarm() {
       hour: '2-digit', 
       minute: '2-digit' 
     });
-
-    console.log(alarmTime);
-
   
     try {
       const subscription = await requestPushSubscription();
@@ -102,13 +117,14 @@ export default function Alarm() {
             alarmActive: true,
           }),
         });
-        console.log(addAlarmResponse);
+
   
         if (!addAlarmResponse.ok) {
           throw new Error('Fehler beim Hinzufügen des Alarms');
         }
   
         alert('Alarm erfolgreich gesetzt!');
+        toggleModal();
       } else {
         alert('Push-Benachrichtigungen konnten nicht aktiviert werden');
       }
@@ -117,7 +133,59 @@ export default function Alarm() {
       alert('Es gab ein Problem beim Hinzufügen des Alarms.');
     }
   }
+
+
+  async function handleDeleteAlarm(id) { 
+    console.log(id);
+    const response = await fetch('/api/deleteAlarms', {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ id }),
+    });
+
+    if(response.ok) {
+      alert('Alarm erfolgreich gelöscht!');
+      setDeleteModalOpen(false);
+    } else {
+      alert('Es gab ein Problem beim Löschen des Alarms.');
+    }
+  }
+
+
+  async function handleToggle(id) {
+    console.log("ID:", id);
   
+    try {
+      const response = await fetch("/api/updateAlarm", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ id }),
+      });
+  
+      if (!response.ok) {
+        throw new Error("Fehler beim Aktualisieren des Alarms");
+      }
+  
+      const data = await response.json(); 
+      if(data) {
+        setIsAlarmActive({...isAlarmActive, [data.plant.alarmID] : data.plant.alarmActive});
+      }
+
+    } catch (error) {
+      console.error("Fehler beim Aktualisieren des Alarms:", error);
+    }
+  }
+  
+
+  function handleCheckIfAlarmIsActive(alarmID) {
+    return isAlarmActive[alarmID];
+  }
+
+
 
 
       return (
@@ -136,15 +204,41 @@ export default function Alarm() {
               <ReactIconAdd IconComponent={MdAddCircle}/>
             </StyledButton>
             {alarmData.map((alarm) => (
-              <AlarmDiv key={alarm._id}>
-               <p>{alarm.alarmTime.split(",")[1]}</p>
-                <p>{alarm.plantname}</p>
-                <p>{alarm.alarmTime.split(",")[0]}</p>
-                <div>
-                  <input type="radio" defaultChecked={alarm.alarmActive} />
-                </div>
+              <AlarmDiv key={alarm._id} 
+                onMouseDown={() => handleTouchStart(alarm._id)}
+                onMouseUp={handleTouchEnd}
+                onTouchStart={() => handleTouchStart(alarm._id)}
+                onTouchEnd={handleTouchEnd}
+              >
+               <StyledHeadline>{alarm.alarmTime.split(",")[1]}</StyledHeadline>
+               <StyledContainerForAlarmHeadline>
+                  <StyledPlantName>{alarm.plantname}</StyledPlantName>
+                  <p>{alarm.alarmTime.split(",")[0]}</p>
+               </StyledContainerForAlarmHeadline>
+                
+                <StyledAlarmInputCheckbox
+                  type="checkbox"
+                  id="toggle"
+                  checked={isAlarmActive[alarm.alarmID] == true ? true : false}
+                  onChange={() => handleToggle(alarm._id)}
+                />
+                <StyledLabelAlarmToggle htmlFor="toggle" />
               </AlarmDiv>
             ))}
+            {deleteModalOpen && (
+              <Modal
+                isOpen={deleteModalOpen}
+                isClosing={isClosing}
+                onClose={() => setDeleteModalOpen(false)}
+                modaltext="Möchtest du diesen Alarm wirklich löschen?"
+                modalheadline="Alarm löschen"
+              >
+                <StyledButtonWrapper>
+                  <StlyedModalButton onClick={() => setDeleteModalOpen(false)} $background={'var(--dark-font-color)'}>Abbrechen</StlyedModalButton>
+                  <StlyedModalButton onClick={() => handleDeleteAlarm(alarmID)} $background={'var(--dark-green-color)'}>Löschen</StlyedModalButton>
+                </StyledButtonWrapper>
+              </Modal>
+            )}
           </>
         ) : (
           <NoAlarmsSet onClick={handleModal} />
@@ -161,6 +255,7 @@ export default function Alarm() {
             <StyledLabel htmlFor="alarmplant">Wähle deine Pflanze</StyledLabel>
             <StyledInputSelect id="alarmplant" name="alarmplant" required>
               {plants && plants.map((plant) => (
+                
                 <StyledInputOption key={plant._id} value={plant._id}>{plant.plantname}</StyledInputOption>
               ))}
             </StyledInputSelect>
@@ -178,6 +273,73 @@ export default function Alarm() {
   );
 } 
 
+const StyledHeadline = styled.h1`
+  font-size: 1.2rem;
+  color: var(--dark-font-color);
+  margin-left: 1.2rem;
+`;
+
+const StyledPlantName = styled.p`
+  font-size: 1rem; 
+  color: var(--dark-font-color);
+`;
+
+const StyledContainerForAlarmHeadline = styled.div`
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+
+  p {
+    margin: 0;
+    padding: 0;
+    
+  }
+
+  :last-child {
+    font-size: 0.7rem;
+  }
+`;
+
+
+const StyledLabelAlarmToggle = styled.label`
+  display: inline-block;
+  width: 50px;
+  height: 24px;
+  background-color: #ccc;
+  border-radius: 12px;
+  position: relative;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  justify-self: flex-end;
+  margin-left: 2rem;
+  &:before {
+    content: '';
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    background: white;
+    border-radius: 50%;
+    top: 2px;
+    left: 2px;
+    transition: transform 0.3s;
+  }
+  `;
+
+
+const StyledAlarmInputCheckbox = styled.input`
+   display: none;
+
+    &:checked + label {
+      /* background-color: #4caf50; */
+      background-color: ${({ checked }) => checked ? 'var(--dark-green-color)' : '#ccc'};
+
+    }
+
+    &:checked + label:before {
+      /* transform: translateX(26px); */
+      transform: ${({ checked }) => checked ? 'translateX(26px)' : 'translateX(0)'};
+    }
+`;
 
 const StyledForm = styled.form`
   display: flex;
@@ -276,22 +438,47 @@ const IconContainer = styled(Link)`
 `;
 
 const AlarmDiv = styled.div`
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr 2fr 1fr 1fr;
+
   justify-content: space-between;
   align-items: center;
-  width: 92%;
+  width: 90%;
   border: 1px solid rgba(0, 0, 0, 0.13);
   border-radius: 20px;
+  gap: 2rem;
   margin: 1rem;
   padding: 0.5rem;
   box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.13);
 `;
+
+const StyledTrashIcon = styled(FaTrash)`
+  font-size: 1rem;
+  color: var(--dark-font-color);
+  cursor: pointer;  
+`;
+
 
 const StyledButton = styled.button`
   background-color: transparent;
   cursor: pointer;
   border-radius: 50%;
   border: none;
+`;
+
+const StyledButtonWrapper = styled.div`
+  display: flex;
+  justify-content: center;
+
+  `;
+
+const StlyedModalButton = styled.button`
+  background-color: ${({ $background }) => $background};
+  color: white;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 5px;
+  margin: 1rem;
 `;
 
 const ReactIconAdd = styled(ReactIcon)`

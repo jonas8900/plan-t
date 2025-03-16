@@ -16,6 +16,7 @@ const plantSchema = new Schema({
   userId: { type: String, required: true, index: true },
   alarmTime: { type: String, required: false },
   alarmActive: { type: Boolean, required: false },
+  alarmID: { type: String, required: false },
   userSubscription: { type: Object, required: false },
 });
 

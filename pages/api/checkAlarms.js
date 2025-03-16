@@ -1,24 +1,24 @@
 import Plant from '@/db/models/Plant';
 import webPush from 'web-push';
 
-// Sicherstellen, dass die VAPID-Schlüssel korrekt gesetzt sind
+
 const publicKey = process.env.NEXT_PUBLIC_VAPID_KEY;
 const privateKey = process.env.PRIVATE_VAPID_KEY;
+
 
 if (!publicKey || !privateKey) {
   console.error('Fehlende VAPID-Schlüssel');
 } else {
   webPush.setVapidDetails(
-    'mailto:jonas.dally@hotmail.de',  // Deine E-Mail-Adresse
-    publicKey,  // Öffentliches Schlüsselpaar
-    privateKey  // Privates Schlüsselpaar
+    'mailto:jonas.dally@hotmail.de', 
+    publicKey,  
+    privateKey  
   );
 }
 
 const newDate = new Date();
 
-console.log("ausgeführt");
-console.log(newDate);
+
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {

@@ -19,6 +19,7 @@ self.addEventListener('push', (event) => {
     body: data.body || 'Du hast eine neue Nachricht!',
     icon: '/icon-192x192.png',
   };
+  console.log(data, title, options);
 
   event.waitUntil(
     self.registration.showNotification(title, options)
