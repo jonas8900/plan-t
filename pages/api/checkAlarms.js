@@ -21,9 +21,10 @@ const newDate = new Date();
 
 
 export default async function handler(req, res) {
-  if (req.method !== 'POST') {
+  if (req.method !== 'POST' && req.method !== 'GET') {
     return res.status(405).json({ error: 'Methode nicht erlaubt.' });
   }
+
 
   try {
     const now = new Date();
