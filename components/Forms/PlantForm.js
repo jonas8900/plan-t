@@ -165,6 +165,7 @@ export default function PlantForm({
     });
 
     if (!response.ok) {
+      setLoading(false);
       alert("Es ist ein Fehler aufgetreten, bitte versuche es erneut");
     } else {
       const data = await response.json();
@@ -173,6 +174,7 @@ export default function PlantForm({
         alert(
           data.error
         );
+        setLoading(false);
         return;
       }
 
