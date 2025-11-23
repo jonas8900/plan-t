@@ -1,10 +1,11 @@
 import Image from "next/image";
-import PlantDetailsInCard from "./PlantDetailsInCard";
+
 import styled from "styled-components";
 import ReactIcon from "@/components/Reacticon";
 import Link from "next/link";
 import { FaPrint } from "react-icons/fa";
 import { BsQrCode } from "react-icons/bs";
+import PlantDetailsInCard from "./PlantDetailsInCard";
 
 export default function DashboardPlantCard({
   headline,
@@ -15,8 +16,6 @@ export default function DashboardPlantCard({
   plantId,
   imageUrl,
 }) {
-
-
   return (
     <PlantCard>
       <PlantImage
@@ -38,8 +37,10 @@ export default function DashboardPlantCard({
       </ContentWrapper>
       <ActionWrapper>
         <Button href={href}>Details</Button>
-        <ButtonToPrintQRCode onClick={() => handleClickedPlant(plantId)}  href="/scan">
-          <ReactIconScan IconComponent={BsQrCode}/>
+        <ButtonToPrintQRCode
+          onClick={() => handleClickedPlant(plantId)}
+          href="/scan">
+          <ReactIconScan IconComponent={BsQrCode} />
         </ButtonToPrintQRCode>
       </ActionWrapper>
     </PlantCard>
@@ -123,12 +124,10 @@ const ButtonToPrintQRCode = styled.button`
 `;
 
 const ReactIconScan = styled(ReactIcon)`
-    color: var(--white-font-and-icon-color);
-    font-size: 1.7rem;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin: 0.6rem 0.35rem 0.35rem 0;
-    `;
-
-
+  color: var(--white-font-and-icon-color);
+  font-size: 1.7rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0.6rem 0.35rem 0.35rem 0;
+`;

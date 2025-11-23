@@ -1,4 +1,4 @@
-import DashboardPlantCard from "@/components/DashboardPlantCard";
+import DashboardPlantCard from "@/components/Cards/DashboardPlantCard";
 import Navbar from "@/components/Navbar";
 import PageHeader from "@/components/PageHeader";
 import PageViewer from "@/components/PageViewer";
@@ -19,11 +19,9 @@ export default function Home({}) {
   const [isModalOpen, setModalOpen] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
   const [plantId, setPlantId] = useState(null);
-  const { data: session} = useSession();
+  const { data: session } = useSession();
 
-
-
-  if(!session) {
+  if (!session) {
     return (
       <>
         <NeedToLogin />
@@ -31,10 +29,7 @@ export default function Home({}) {
     );
   }
 
-
-
   if (isLoading) return <div>Loading...</div>;
-
 
   function toggleModal() {
     if (isModalOpen) {
@@ -46,24 +41,23 @@ export default function Home({}) {
     } else {
       setModalOpen(true);
     }
-  };
+  }
 
   function handleClickedPlant(id) {
     toggleModal();
-    if(id !== null) {
+    if (id !== null) {
       setPlantId(id);
     }
   }
 
-
-console.log(data);
+  console.log(data);
 
   return (
     <>
       <PageHeader />
       <NavigationContainer>
         <AddPlantLink href="/addplants">
-        <ReactIconAdd IconComponent={MdAddCircle}/>
+          <ReactIconAdd IconComponent={MdAddCircle} />
         </AddPlantLink>
         <PageViewer>Dashboard</PageViewer>
       </NavigationContainer>
@@ -77,7 +71,7 @@ console.log(data);
                 { Label: "Größe", value: plant.size ? plant.size + " cm" : "" },
                 {
                   Label: "Gießen in",
-                  value: handleWateringInterval(plant) ,
+                  value: handleWateringInterval(plant),
                 },
                 {
                   Label: "Letztes umtopfen",
@@ -137,4 +131,4 @@ const PlantCardWrapper = styled.div`
 
 const AddPlantLink = styled(Link)`
   margin-top: 0.75rem;
-  `;
+`;

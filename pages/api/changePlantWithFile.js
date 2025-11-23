@@ -30,7 +30,7 @@ export default async function handler(request, response) {
     }
 
     const form = formidable({
-      maxFileSize: 3 * 1024 * 1024,
+      maxFileSize: 10 * 1024 * 1024,
     });
 
     form.parse(request, async (err, fields, files) => {
@@ -38,7 +38,7 @@ export default async function handler(request, response) {
         if (err.code === "LIMIT_FILE_SIZE") {
           return response
             .status(400)
-            .json({ error: "Die Datei ist zu groß. Bitte wählen Sie eine Datei, die kleiner als 3 MB ist." });
+            .json({ error: "Die Datei ist zu groß. Bitte wählen Sie eine Datei, die kleiner als 10 MB ist." });
         }
         console.error(err);
         return response.status(400).json({ error: "Fehler beim Verarbeiten der Formulardaten." });

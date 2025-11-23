@@ -10,13 +10,14 @@ import Navbar from "@/components/Navbar";
 import Image from "next/image";
 import { useSession, signIn, signOut } from "next-auth/react";
 import useSWR from "swr";
-import NeedToLogin from "@/components/NeedToLoginScreen";
-import RenderInputField from "@/components/renderInputField";
 
 export default function Profile() {
     const [typeSwitch, setTypeSwitch] = useState('password');
     const { data: session } = useSession();
     const { data } = useSWR("/api/getPlants");
+    const [googleSignIn, setGoogleSignIn] = useState(false);
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
     let PlantCosts = 0;
 
     if(session && data) {
@@ -41,6 +42,11 @@ export default function Profile() {
         setTypeSwitch('password');
     }
 
+    // zurücksetzten der credentials vor dem google sign in aufgrund der signIn Methode von nextauth
+    function handleSignIn() {
+        setGoogleSignIn(true);
+        signIn("google");
+    }
 
 
       return (
@@ -91,11 +97,11 @@ export default function Profile() {
             <StyledForm>
                 <InputContainer>
                     <StyledLabel htmlFor="email">Email adresse</StyledLabel>
-                    <StyledInput type="text" id="email" name="email" placeholder="email" required />
+                    <StyledInput type="text" id="email" name="email" placeholder="email" value={googleSignIn ? "" : email} onChange={(e) => setEmail(e.target.value)} required />
                 </InputContainer>
                 <InputContainer>
                     <StyledLabel htmlFor="password">Passwort</StyledLabel>
-                    <StyledInput type={typeSwitch} id="password" name="password" placeholder="Passwort" required/>
+                    <StyledInput type={typeSwitch} id="password" name="password" placeholder="Passwort" value={googleSignIn ? "" : password} onChange={(e) => setPassword(e.target.value)} required/>
                     <VisibilityIconWrapper onTouchEnd={handlePasswortTypeVisibil} onTouchStart={handlePasswortTypeHidden}>
                         <VisibilityIcon IconComponent={MdVisibility}/>
                     </VisibilityIconWrapper>
@@ -105,9 +111,9 @@ export default function Profile() {
                 </ButtonWrapper>
                 <StyledLine><StyledDiv></StyledDiv><StyledParagraphLine>oder</StyledParagraphLine><StyledDiv></StyledDiv></StyledLine>
                 <StyledGoogleWrapper>
-                        <StyledGoogleButton onClick={() => signIn("google")}><Image src="../icons/icons8-google.svg" alt="google-icon" width={22} height={22}/>Login mit Google</StyledGoogleButton>
+                        <StyledGoogleButton onClick={handleSignIn}><Image src="../icons/icons8-google.svg" alt="google-icon" width={22} height={22}/>Login mit Google</StyledGoogleButton>
                 </StyledGoogleWrapper>
-                <StyledRegisterLink href="">Noch keinen Account? Jetzt Registrieren</StyledRegisterLink>
+                <StyledRegisterLink href="/registration">Noch keinen Account? Jetzt Registrieren</StyledRegisterLink>
             </StyledForm>
         
             </>

@@ -2,7 +2,7 @@ import ReactIcon from "@/components/Reacticon";
 import Navbar from "@/components/Navbar";
 import PageHeader from "@/components/PageHeader";
 import PageViewer from "@/components/PageViewer";
-import PlantForm from "@/components/PlantForm";
+import PlantForm from "@/components/Forms/PlantForm";
 import Link from "next/link";
 import styled from "styled-components";
 import { IoArrowBackOutline } from "react-icons/io5";
@@ -17,13 +17,13 @@ export default function ChangePlant() {
   const [deletedFile, setDeletedFile] = useState(false);
 
   const { id } = router.query;
-  const { data, error, isLoading } = useSWR(id ? `/api/getSinglePlant?id=${id}` : null);
-
+  const { data, error, isLoading } = useSWR(
+    id ? `/api/getSinglePlant?id=${id}` : null
+  );
 
   useEffect(() => {
     console.log("re-rendered");
   }, [deletedFile]);
-
 
   async function handleSubmit(event) {
     event.preventDefault();
@@ -33,19 +33,21 @@ export default function ChangePlant() {
 
     if (file) {
       if (file instanceof Blob) {
-          const fileWithCorrectType = new File([file], file.name, { type: file.type });
-          formData.set("image", fileWithCorrectType); 
+        const fileWithCorrectType = new File([file], file.name, {
+          type: file.type,
+        });
+        formData.set("image", fileWithCorrectType);
       } else {
-          formData.set("image", file); 
+        formData.set("image", file);
       }
-  }
+    }
 
-    if(formData.get("image") && formData.get("image").size > 0) {
+    if (formData.get("image") && formData.get("image").size > 0) {
       const response = await fetch(`/api/changePlantWithFile?id=${id}`, {
         method: "PUT",
         body: formData,
       });
-  
+
       if (!response.ok) {
         alert("Es ist ein fehler aufgetreten, bitte versuche es erneut");
       } else {
@@ -53,33 +55,29 @@ export default function ChangePlant() {
         alert("Pflanze wurde erfolgreich geändert");
         router.push("/");
       }
-  
-      event.target.reset();
 
-      
+      event.target.reset();
     } else {
       const response = await fetch(`/api/changePlant?id=${id}`, {
         method: "PUT",
         headers: {
-         "Content-Type": "application/json",
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(data),
       });
-  
+
       if (!response.ok) {
         alert("Es ist ein fehler aufgetreten, bitte versuche es erneut");
       } else {
         alert("Pflanze wurde erfolgreich geändert");
         router.push("/");
       }
-  
+
       event.target.reset();
     }
-}
-
+  }
 
   async function handleDeleteFile() {
-
     const response = await fetch(`/api/deleteFile?id=${id}`, {
       method: "DELETE",
     });
@@ -93,18 +91,22 @@ export default function ChangePlant() {
     setDeletedFile(!deletedFile);
   }
 
-
-
   return (
     <>
       <PageHeader />
       <NavigationContainer>
         <IconContainer href="/">
-          <ReactIconArrowBack IconComponent={IoArrowBackOutline}/>
+          <ReactIconArrowBack IconComponent={IoArrowBackOutline} />
         </IconContainer>
         <PageViewer>Pflanze ändern</PageViewer>
       </NavigationContainer>
-      <PlantForm handleSubmit={handleSubmit} plantData={data} handleDeleteFile={handleDeleteFile} file={file} setFile={setFile}/>
+      <PlantForm
+        handleSubmit={handleSubmit}
+        plantData={data}
+        handleDeleteFile={handleDeleteFile}
+        file={file}
+        setFile={setFile}
+      />
       <Navbar />
     </>
   );
@@ -115,7 +117,6 @@ const ReactIconArrowBack = styled(ReactIcon)`
   color: var(--white-font-and-icon-color);
   display: flex;
   align-items: center;
-  
 `;
 
 const IconContainer = styled(Link)`

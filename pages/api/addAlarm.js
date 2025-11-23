@@ -1,6 +1,6 @@
 import dbConnect from "@/db/connect";
 import Plant from "@/db/models/Plant";
-import { getSession } from "next-auth/react";
+import { getServerSession } from "next-auth";
 import { v4 as uuidv4 } from "uuid";
 
 
@@ -9,7 +9,12 @@ import { v4 as uuidv4 } from "uuid";
 export default async function hander(request, response) {
     await dbConnect();
 
-    const session = await getSession({ req: request });
+     const session = await getServerSession(request, response);
+
+
+    if(!session) {
+        return response.status(401).json({error: "Unauthorized" });
+    }
 
 
     if(request.method === "POST") {

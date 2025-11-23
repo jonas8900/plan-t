@@ -22,7 +22,6 @@ self.addEventListener('push', (event) => {
     icon: data.icon || '/icon-192x192.png',
   };
 
-  // Manuelles Testen der Benachrichtigung
   event.waitUntil(
     self.registration.showNotification(title, options)
       .then(() => {
@@ -31,19 +30,5 @@ self.addEventListener('push', (event) => {
       .catch((err) => {
         console.error('Fehler beim Anzeigen der Benachrichtigung:', err);
       })
-  );
-});
-
-// Dies sendet die Benachrichtigung manuell, wenn du den Service Worker installierst oder aktivierst
-self.addEventListener('activate', (event) => {
-  event.waitUntil(
-    self.registration.showNotification("Testbenachrichtigung", {
-      body: "Dies ist eine manuelle Testbenachrichtigung.",
-      icon: "/icon-192x192.png",
-    }).then(() => {
-      console.log('Manuelle Benachrichtigung während Aktivierung gesendet');
-    }).catch((err) => {
-      console.error('Fehler beim Senden der manuellen Benachrichtigung:', err);
-    })
   );
 });

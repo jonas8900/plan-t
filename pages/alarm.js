@@ -9,7 +9,7 @@ import Navbar from "@/components/Navbar";
 import { useSession } from "next-auth/react";
 import NeedToLogin from "@/components/NeedToLoginScreen";
 import NoAlarmsSet from "@/components/NoAlarmsSet";
-import Modal from "@/components/InfoModal";
+import Modal from "@/components/Modals/InfoModal";
 import useSWR from "swr";
 import { isPushSupported, requestPushSubscription } from "@/utils";
 import { MdAddCircle } from "react-icons/md";
@@ -26,11 +26,10 @@ export default function Alarm() {
   const [isAlarmActive, setIsAlarmActive] = useState({});
   const timeoutRef = useRef(null);
 
-
-  if(!session) {
+  if (!session) {
     return (
       <>
-      <NeedToLogin />
+        <NeedToLogin />
       </>
     );
   }
@@ -38,8 +37,6 @@ export default function Alarm() {
   if (isLoading) {
     return <div>Loading...</div>;
   }
-
-
 
   function toggleModal() {
     if (isModalOpen) {
@@ -51,7 +48,7 @@ export default function Alarm() {
     } else {
       setIsModalOpen(true);
     }
-  };
+  }
 
   function handleModal() {
     setIsModalOpen(!isModalOpen);
@@ -61,55 +58,52 @@ export default function Alarm() {
     timeoutRef.current = setTimeout(() => {
       setDeleteModalOpen(true);
       setAlarmID(id);
-    }, 500); 
-  };
+    }, 500);
+  }
 
   function handleTouchEnd() {
     clearTimeout(timeoutRef.current);
-  };
-
-
-
+  }
 
   async function handleSubmit(event) {
     event.preventDefault();
-    console.log('saved');
-    
+    console.log("saved");
+
     const formData = new FormData(event.target);
     const data = Object.fromEntries(formData);
-  
-    const alarmTime = new Date(data.alarmtime).toLocaleString([], { 
-      year: 'numeric', 
-      month: '2-digit', 
-      day: '2-digit', 
-      hour: '2-digit', 
-      minute: '2-digit' 
+
+    const alarmTime = new Date(data.alarmtime).toLocaleString([], {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
     });
-  
+
     try {
       const subscription = await requestPushSubscription();
 
       if (subscription) {
-        const saveSubscriptionResponse = await fetch('/api/saveSubscription', {
-          method: 'POST',
+        const saveSubscriptionResponse = await fetch("/api/saveSubscription", {
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
           },
           body: JSON.stringify({
             plantId: data.alarmplant,
             subscription,
           }),
         });
-  
+
         if (!saveSubscriptionResponse.ok) {
-          console.log('Fehler beim Speichern der Subscription');
-          throw new Error('Fehler beim Speichern der Subscription');
+          console.log("Fehler beim Speichern der Subscription");
+          throw new Error("Fehler beim Speichern der Subscription");
         }
-  
-        const addAlarmResponse = await fetch('/api/addAlarm', {
-          method: 'POST',
+
+        const addAlarmResponse = await fetch("/api/addAlarm", {
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
           },
           body: JSON.stringify({
             plantId: data.alarmplant,
@@ -118,45 +112,42 @@ export default function Alarm() {
           }),
         });
 
-  
         if (!addAlarmResponse.ok) {
-          throw new Error('Fehler beim Hinzufügen des Alarms');
+          throw new Error("Fehler beim Hinzufügen des Alarms");
         }
-  
-        alert('Alarm erfolgreich gesetzt!');
+
+        alert("Alarm erfolgreich gesetzt!");
         toggleModal();
       } else {
-        alert('Push-Benachrichtigungen konnten nicht aktiviert werden');
+        alert("Push-Benachrichtigungen konnten nicht aktiviert werden");
       }
     } catch (error) {
       console.error(error);
-      alert('Es gab ein Problem beim Hinzufügen des Alarms.');
+      alert("Es gab ein Problem beim Hinzufügen des Alarms.");
     }
   }
 
-
-  async function handleDeleteAlarm(id) { 
+  async function handleDeleteAlarm(id) {
     console.log(id);
-    const response = await fetch('/api/deleteAlarms', {
-      method: 'DELETE',
+    const response = await fetch("/api/deleteAlarms", {
+      method: "DELETE",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({ id }),
     });
 
-    if(response.ok) {
-      alert('Alarm erfolgreich gelöscht!');
+    if (response.ok) {
+      alert("Alarm erfolgreich gelöscht!");
       setDeleteModalOpen(false);
     } else {
-      alert('Es gab ein Problem beim Löschen des Alarms.');
+      alert("Es gab ein Problem beim Löschen des Alarms.");
     }
   }
 
-
   async function handleToggle(id) {
     console.log("ID:", id);
-  
+
     try {
       const response = await fetch("/api/updateAlarm", {
         method: "PUT",
@@ -165,57 +156,55 @@ export default function Alarm() {
         },
         body: JSON.stringify({ id }),
       });
-  
+
       if (!response.ok) {
         throw new Error("Fehler beim Aktualisieren des Alarms");
       }
-  
-      const data = await response.json(); 
-      if(data) {
-        setIsAlarmActive({...isAlarmActive, [data.plant.alarmID] : data.plant.alarmActive});
-      }
 
+      const data = await response.json();
+      if (data) {
+        setIsAlarmActive({
+          ...isAlarmActive,
+          [data.plant.alarmID]: data.plant.alarmActive,
+        });
+      }
     } catch (error) {
       console.error("Fehler beim Aktualisieren des Alarms:", error);
     }
   }
-  
 
   function handleCheckIfAlarmIsActive(alarmID) {
     return isAlarmActive[alarmID];
   }
 
-
-
-
-      return (
-        <>
-        <PageHeader />
-        <NavigationContainer>
-            <IconContainer href="/">
-                <ReactIconArrowBack IconComponent={IoArrowBackOutline}/>
-            </IconContainer>
-            <PageViewer>Alarm</PageViewer>
-        </NavigationContainer>
-        <StyledWrapper>
+  return (
+    <>
+      <PageHeader />
+      <NavigationContainer>
+        <IconContainer href="/">
+          <ReactIconArrowBack IconComponent={IoArrowBackOutline} />
+        </IconContainer>
+        <PageViewer>Alarm</PageViewer>
+      </NavigationContainer>
+      <StyledWrapper>
         {alarmData && alarmData.length > 0 ? (
           <>
             <StyledButton onClick={handleModal}>
-              <ReactIconAdd IconComponent={MdAddCircle}/>
+              <ReactIconAdd IconComponent={MdAddCircle} />
             </StyledButton>
             {alarmData.map((alarm) => (
-              <AlarmDiv key={alarm._id} 
+              <AlarmDiv
+                key={alarm._id}
                 onMouseDown={() => handleTouchStart(alarm._id)}
                 onMouseUp={handleTouchEnd}
                 onTouchStart={() => handleTouchStart(alarm._id)}
-                onTouchEnd={handleTouchEnd}
-              >
-               <StyledHeadline>{alarm.alarmTime.split(",")[1]}</StyledHeadline>
-               <StyledContainerForAlarmHeadline>
+                onTouchEnd={handleTouchEnd}>
+                <StyledHeadline>{alarm.alarmTime.split(",")[1]}</StyledHeadline>
+                <StyledContainerForAlarmHeadline>
                   <StyledPlantName>{alarm.plantname}</StyledPlantName>
                   <p>{alarm.alarmTime.split(",")[0]}</p>
-               </StyledContainerForAlarmHeadline>
-                
+                </StyledContainerForAlarmHeadline>
+
                 <StyledAlarmInputCheckbox
                   type="checkbox"
                   id="toggle"
@@ -231,11 +220,18 @@ export default function Alarm() {
                 isClosing={isClosing}
                 onClose={() => setDeleteModalOpen(false)}
                 modaltext="Möchtest du diesen Alarm wirklich löschen?"
-                modalheadline="Alarm löschen"
-              >
+                modalheadline="Alarm löschen">
                 <StyledButtonWrapper>
-                  <StlyedModalButton onClick={() => setDeleteModalOpen(false)} $background={'var(--dark-font-color)'}>Abbrechen</StlyedModalButton>
-                  <StlyedModalButton onClick={() => handleDeleteAlarm(alarmID)} $background={'var(--dark-green-color)'}>Löschen</StlyedModalButton>
+                  <StlyedModalButton
+                    onClick={() => setDeleteModalOpen(false)}
+                    $background={"var(--dark-font-color)"}>
+                    Abbrechen
+                  </StlyedModalButton>
+                  <StlyedModalButton
+                    onClick={() => handleDeleteAlarm(alarmID)}
+                    $background={"var(--dark-green-color)"}>
+                    Löschen
+                  </StlyedModalButton>
                 </StyledButtonWrapper>
               </Modal>
             )}
@@ -249,29 +245,38 @@ export default function Alarm() {
             isClosing={isClosing}
             onClose={toggleModal}
             modaltext="Lege hier deine Alarme an, um dich an deine täglichen Aufgaben zu erinnern."
-            modalheadline="Alarme"
-          >
-          <StyledForm onSubmit={handleSubmit}>
-            <StyledLabel htmlFor="alarmplant">Wähle deine Pflanze</StyledLabel>
-            <StyledInputSelect id="alarmplant" name="alarmplant" required>
-              {plants && plants.map((plant) => (
-                
-                <StyledInputOption key={plant._id} value={plant._id}>{plant.plantname}</StyledInputOption>
-              ))}
-            </StyledInputSelect>
+            modalheadline="Alarme">
+            <StyledForm onSubmit={handleSubmit}>
+              <StyledLabel htmlFor="alarmplant">
+                Wähle deine Pflanze
+              </StyledLabel>
+              <StyledInputSelect id="alarmplant" name="alarmplant" required>
+                {plants &&
+                  plants.map((plant) => (
+                    <StyledInputOption key={plant._id} value={plant._id}>
+                      {plant.plantname}
+                    </StyledInputOption>
+                  ))}
+              </StyledInputSelect>
               <StyledLabel htmlFor="alarmtime">Alarmzeit:</StyledLabel>
               <StyledDateInputWrapper>
-              <StyledAlarmInput type="datetime-local" id="alarmtime" name="alarmtime" required></StyledAlarmInput>
-              <StyledSubmitButton type="submit">Alarm hinzufügen</StyledSubmitButton>
-            </StyledDateInputWrapper>
-          </StyledForm>
-        </Modal>
+                <StyledAlarmInput
+                  type="datetime-local"
+                  id="alarmtime"
+                  name="alarmtime"
+                  required></StyledAlarmInput>
+                <StyledSubmitButton type="submit">
+                  Alarm hinzufügen
+                </StyledSubmitButton>
+              </StyledDateInputWrapper>
+            </StyledForm>
+          </Modal>
         )}
-        </StyledWrapper>
-        <Navbar />
-        </>
+      </StyledWrapper>
+      <Navbar />
+    </>
   );
-} 
+}
 
 const StyledHeadline = styled.h1`
   font-size: 1.2rem;
@@ -280,7 +285,7 @@ const StyledHeadline = styled.h1`
 `;
 
 const StyledPlantName = styled.p`
-  font-size: 1rem; 
+  font-size: 1rem;
   color: var(--dark-font-color);
 `;
 
@@ -292,14 +297,12 @@ const StyledContainerForAlarmHeadline = styled.div`
   p {
     margin: 0;
     padding: 0;
-    
   }
 
   :last-child {
     font-size: 0.7rem;
   }
 `;
-
 
 const StyledLabelAlarmToggle = styled.label`
   display: inline-block;
@@ -313,7 +316,7 @@ const StyledLabelAlarmToggle = styled.label`
   justify-self: flex-end;
   margin-left: 2rem;
   &:before {
-    content: '';
+    content: "";
     position: absolute;
     width: 20px;
     height: 20px;
@@ -323,22 +326,22 @@ const StyledLabelAlarmToggle = styled.label`
     left: 2px;
     transition: transform 0.3s;
   }
-  `;
-
+`;
 
 const StyledAlarmInputCheckbox = styled.input`
-   display: none;
+  display: none;
 
-    &:checked + label {
-      /* background-color: #4caf50; */
-      background-color: ${({ checked }) => checked ? 'var(--dark-green-color)' : '#ccc'};
+  &:checked + label {
+    /* background-color: #4caf50; */
+    background-color: ${({ checked }) =>
+      checked ? "var(--dark-green-color)" : "#ccc"};
+  }
 
-    }
-
-    &:checked + label:before {
-      /* transform: translateX(26px); */
-      transform: ${({ checked }) => checked ? 'translateX(26px)' : 'translateX(0)'};
-    }
+  &:checked + label:before {
+    /* transform: translateX(26px); */
+    transform: ${({ checked }) =>
+      checked ? "translateX(26px)" : "translateX(0)"};
+  }
 `;
 
 const StyledForm = styled.form`
@@ -357,11 +360,11 @@ const StyledDateInputWrapper = styled.div`
 
 const StyledLabel = styled.label`
   color: var(--dark-font-color);
-  display: flex; 
+  display: flex;
   flex-direction: column;
   margin-top: 1rem;
   align-self: flex-start;
-  `;
+`;
 
 const StyledInputOption = styled.option`
   color: var(--dark-font-color);
@@ -379,9 +382,9 @@ const StyledInputSelect = styled.select`
   border-radius: 5px;
   font-family: poppins;
   font-size: 0.9rem;
-  `;
+`;
 
-  const StyledAlarmInput = styled.input`
+const StyledAlarmInput = styled.input`
   width: 40%;
   padding: 0.5rem;
   border: 1px solid #cecece;
@@ -390,8 +393,7 @@ const StyledInputSelect = styled.select`
   font-size: 0.9rem;
   width: fit-content;
   margin-bottom: 2rem;
-  `;
-
+`;
 
 const StyledWrapper = styled.div`
   display: flex;
@@ -400,7 +402,7 @@ const StyledWrapper = styled.div`
   justify-content: center;
   margin: auto;
   height: 100%;
-  `;
+`;
 
 const StyledSubmitButton = styled.button`
   background-color: var(--dark-green-color);
@@ -408,7 +410,6 @@ const StyledSubmitButton = styled.button`
   padding: 0.5rem 1rem;
   border: none;
   border-radius: 5px;
-
 `;
 
 const ReactIconArrowBack = styled(ReactIcon)`
@@ -455,9 +456,8 @@ const AlarmDiv = styled.div`
 const StyledTrashIcon = styled(FaTrash)`
   font-size: 1rem;
   color: var(--dark-font-color);
-  cursor: pointer;  
+  cursor: pointer;
 `;
-
 
 const StyledButton = styled.button`
   background-color: transparent;
@@ -469,8 +469,7 @@ const StyledButton = styled.button`
 const StyledButtonWrapper = styled.div`
   display: flex;
   justify-content: center;
-
-  `;
+`;
 
 const StlyedModalButton = styled.button`
   background-color: ${({ $background }) => $background};

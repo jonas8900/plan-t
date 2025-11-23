@@ -5,7 +5,7 @@ import { MdOutlineQrCode2, MdOutlineHelpCenter } from "react-icons/md";
 import ReactIcon from "@/components/Reacticon";
 import { useState } from "react";
 import Link from "next/link";
-import Modal from "@/components/InfoModal"; 
+import Modal from "@/components/Modals/InfoModal";
 import { useSession } from "next-auth/react";
 
 export default function PageHeader() {
@@ -37,18 +37,20 @@ export default function PageHeader() {
           height={160}
         />
       </ImageContainer>
-      {session  ? (
+      {session ? (
         <>
           <AnchorLoggedIn href="/profile">
-            <ProfilePicture src={session?.user.image} alt="user image" width={40} height={40}/>
+            <ProfilePicture
+              src={session?.user.image}
+              alt="user image"
+              width={40}
+              height={40}
+            />
           </AnchorLoggedIn>
           <WelcomeParagraph>Hey {session?.user.name}</WelcomeParagraph>
         </>
       ) : (
-  
-        <Anchor href="/profile">
-        Login
-      </Anchor>
+        <Anchor href="/profile">Login</Anchor>
       )}
       <HelpIconContainer onClick={toggleModal}>
         <ReactIconHelp IconComponent={MdOutlineHelpCenter} />
@@ -85,7 +87,6 @@ const Headline = styled.h1`
   font-family: "Poppins", sans-serif;
   font-weight: 500;
   text-shadow: 5px 3px 4px rgba(107, 107, 107, 0.3);
-  
 `;
 
 const ImageContainer = styled.div`
@@ -143,7 +144,7 @@ const ReactIconHelp = styled(ReactIcon)`
 
 const ProfilePicture = styled(Image)`
   border-radius: 12px;
-  `;
+`;
 
 const WelcomeParagraph = styled.p`
   position: absolute;
@@ -155,4 +156,3 @@ const WelcomeParagraph = styled.p`
   font-family: "Poppins", sans-serif;
   text-shadow: 5px 3px 4px rgba(107, 107, 107, 0.3);
 `;
-
