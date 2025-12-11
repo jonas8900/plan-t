@@ -3,8 +3,9 @@ import styled from "styled-components";
 import RenderInputField from "../renderInputField";
 import Image from "next/image";
 import { IoMdCloseCircle } from "react-icons/io";
+import { handleChange } from "@/lib/helper";
 
-export default function RegistrationForm({ handleSubmit }) {
+export default function RegistrationForm({ handleSubmit, loading }) {
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -12,19 +13,10 @@ export default function RegistrationForm({ handleSubmit }) {
     username: "",
   });
 
-  function handleChange(event) {
-    const { name, value } = event.target;
-    setFormData((prevData) => {
-      return {
-        ...prevData,
-        [name]: value,
-      };
-    });
-  }
 
   return (
     <Section>
-      <HeadlineAddPlant>Pflanzendaten</HeadlineAddPlant>
+      <HeadlineAddPlant>Registrieren</HeadlineAddPlant>
       <form onSubmit={(e) => handleSubmit(e, formData)}>
         <RenderInputField
           label={"Benutzername"}
@@ -32,7 +24,7 @@ export default function RegistrationForm({ handleSubmit }) {
           name={"username"}
           placeholder={"Pflanzenfreund123"}
           formData={formData}
-          handleChange={handleChange}
+          handleChange={(event) => handleChange(event, setFormData)}
           required
         />
 
@@ -42,7 +34,7 @@ export default function RegistrationForm({ handleSubmit }) {
           name={"name"}
           placeholder={"z.B. Max Mustermann"}
           formData={formData}
-          handleChange={handleChange}
+          handleChange={(event) => handleChange(event, setFormData)}
           required
         />
 
@@ -52,7 +44,7 @@ export default function RegistrationForm({ handleSubmit }) {
           name={"email"}
           placeholder={"z.B. max.mustermann@example.com"}
           formData={formData}
-          handleChange={handleChange}
+          handleChange={(event) => handleChange(event, setFormData)}
           required
         />
 
@@ -62,12 +54,12 @@ export default function RegistrationForm({ handleSubmit }) {
           name={"password"}
           placeholder={"Ihr Passwort"}
           formData={formData}
-          handleChange={handleChange}
+          handleChange={(event) => handleChange(event, setFormData)}
           required
         />
 
         <ButtonContainer>
-          <Button type="submit">Speichern</Button>
+          <Button type="submit" disabled={loading}>{loading ? "Lädt..." : "Speichern"}</Button>
         </ButtonContainer>
       </form>
     </Section>

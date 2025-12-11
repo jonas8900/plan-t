@@ -17,7 +17,7 @@ export default function ChangePlant() {
   const [deletedFile, setDeletedFile] = useState(false);
 
   const { id } = router.query;
-  const { data, error, isLoading } = useSWR(
+  const { data } = useSWR(
     id ? `/api/getSinglePlant?id=${id}` : null
   );
 

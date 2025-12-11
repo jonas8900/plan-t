@@ -41,13 +41,13 @@ export default function PageHeader() {
         <>
           <AnchorLoggedIn href="/profile">
             <ProfilePicture
-              src={session?.user.image}
+              src={session?.user?.image? session.user.image : "/images/placeholder.jpg"}
               alt="user image"
               width={40}
               height={40}
             />
           </AnchorLoggedIn>
-          <WelcomeParagraph>Hey {session?.user.name}</WelcomeParagraph>
+          <WelcomeParagraph>Hey {session.user?.username ? session.user?.username : session.user?.name}</WelcomeParagraph>
         </>
       ) : (
         <Anchor href="/profile">Login</Anchor>
@@ -144,6 +144,7 @@ const ReactIconHelp = styled(ReactIcon)`
 
 const ProfilePicture = styled(Image)`
   border-radius: 12px;
+  object-fit: cover;
 `;
 
 const WelcomeParagraph = styled.p`

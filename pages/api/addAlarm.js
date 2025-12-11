@@ -25,7 +25,6 @@ export default async function hander(request, response) {
             plant.alarmActive = alarmActive;
             plant.alarmID = uuidv4();
             await plant.save();
-            console.log(plant);
             response.status(200).json({ message: "Alarm added" });
         } catch (error) {
             response.status(400).json({ error: "Error adding alarm" });

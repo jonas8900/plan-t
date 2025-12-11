@@ -59,8 +59,9 @@ export default function Alarm() {
       setDeleteModalOpen(true);
       setAlarmID(id);
     }, 500);
+    console.log("pressed");
+    
   }
-
   function handleTouchEnd() {
     clearTimeout(timeoutRef.current);
   }
@@ -72,13 +73,8 @@ export default function Alarm() {
     const formData = new FormData(event.target);
     const data = Object.fromEntries(formData);
 
-    const alarmTime = new Date(data.alarmtime).toLocaleString([], {
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+    const alarmTime = new Date(data.alarmtime);
+
 
     try {
       const subscription = await requestPushSubscription();

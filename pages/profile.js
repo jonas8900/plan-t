@@ -2,7 +2,7 @@ import PageHeader from "@/components/PageHeader";
 import PageViewer from "@/components/PageViewer";
 import ReactIcon from "@/components/Reacticon";
 import Link from "next/link";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { IoArrowBackOutline } from "react-icons/io5";
 import styled from "styled-components";
 import { MdVisibility } from "react-icons/md";
@@ -10,6 +10,12 @@ import Navbar from "@/components/Navbar";
 import Image from "next/image";
 import { useSession, signIn, signOut } from "next-auth/react";
 import useSWR from "swr";
+import SubmissionModal from "@/components/Modals/SubmissionModal";
+import RenderInputField from "@/components/renderInputField";
+import { motion } from "framer-motion";
+import { handleChange } from "@/lib/helper";
+import ErrorMessage from "@/components/Toast/ErrorMessage";
+import SuccessMessage from "@/components/Toast/SuccessMessage";
 
 export default function Profile() {
     const [typeSwitch, setTypeSwitch] = useState('password');
@@ -17,7 +23,16 @@ export default function Profile() {
     const { data } = useSWR("/api/getPlants");
     const [googleSignIn, setGoogleSignIn] = useState(false);
     const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
+    const [password, setPassword] = useState("");  
+    const [forgotPassword, setForgotPassword] = useState(false);
+
+    const [loading, setLoading] = useState(false);
+    const [showError, setShowError] = useState(false);
+    const [showSuccess, setShowSuccess] = useState(false);
+    const [toastMessage, setToastMessage] = useState("");
+    const [modalOpen, setModalOpen] = useState(false);
+
+    const [formData, setFormData] = useState({ email: "" });
     let PlantCosts = 0;
 
     if(session && data) {
@@ -42,86 +57,214 @@ export default function Profile() {
         setTypeSwitch('password');
     }
 
-    // zurücksetzten der credentials vor dem google sign in aufgrund der signIn Methode von nextauth
     function handleSignIn() {
         setGoogleSignIn(true);
         signIn("google");
     }
 
+    async function handleSignInWithCredentials(event) {
+        event.preventDefault();
+        setLoading(true);
+        const result = await signIn("credentials", {
+            redirect: false,
+            email,
+            password,
+        });
+        if (result.error) {
+            setShowError(true);
+            setToastMessage("Ungültige E-Mail oder Passwort.");
+            setLoading(false);
+            setTimeout(() => {
+                setShowError(false);
+                setToastMessage("");
+            }, 5000);
+            return;
+        } else {
+            setShowSuccess(true);
+            setToastMessage("Erfolgreich eingeloggt! 🎉");
+            setLoading(false);
+            setTimeout(() => {
+                setShowSuccess(false);
+                setToastMessage("");
+            }, 5000);
+        }
 
+    }
+  
+    async function handleSubmitForgotPassword() {
+        const raw = formData.email;
+        console.log(raw);
+
+        if (!raw) {
+            setShowError(true);
+            setToastMessage("Bitte gib eine E-Mail-Adresse ein.");
+            setTimeout(() => {
+            setShowError(false);
+            setToastMessage("");
+            }, 5000);
+            return;
+        }
+
+        const email = raw
+            .toString()
+            .normalize("NFKC")
+            .trim()
+            .replace(/[\u200B-\u200D\uFEFF]/g, "")
+            .toLowerCase();
+
+        try {
+            const response = await fetch("/api/login/forgot-password", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ email }),
+            });
+
+            if (!response.ok) {
+            setShowError(true);
+            setToastMessage("Fehler beim Senden der E-Mail.");
+            setTimeout(() => {
+                setShowError(false);
+                setToastMessage("");
+            }, 5000);
+            return;
+            }
+
+            setShowSuccess(true);
+            setToastMessage(
+            "E-Mail zum Zurücksetzen des Passworts wurde gesendet!"
+            );
+            setTimeout(() => {
+            setShowSuccess(false);
+            setToastMessage("");
+            setForgotPassword(false);
+            // optional: Formular leeren
+            setFormData({ email: "" });
+            }, 5000);
+        } catch (error) {
+            setShowError(true);
+            setToastMessage("Es gab einen Fehler. Versuche es später erneut.");
+            setTimeout(() => {
+            setShowError(false);
+            setToastMessage("");
+            }, 5000);
+        }
+    }
+
+
+    console.log("Session:", session);
       return (
         <>
             <PageHeader />
-        {session ? (
-            <>
+            {showError && <ErrorMessage message={toastMessage} />}
+            {showSuccess && <SuccessMessage message={toastMessage} />}
+            {session ? (
+                <>
+                    <NavigationContainer>
+                        <IconContainer href="/">
+                            <ReactIconArrowBack IconComponent={IoArrowBackOutline}/>
+                        </IconContainer>
+                        <PageViewer>Profil</PageViewer>
+                    </NavigationContainer>
+                    <InputContainer>
+                        <StyledLabel htmlFor="name">Name</StyledLabel>
+                        <StyledInput type="text" id="name" name="name" placeholder="name" value={session.user?.name} readOnly/>
+                    </InputContainer>
+                      {session?.user?.username && (
+                        <InputContainer>
+                            <StyledLabel htmlFor="username">Benutzername</StyledLabel>
+                            <StyledInput type="text" id="username" name="username" placeholder="username" value={session.user?.username} readOnly/>
+                        </InputContainer>
+                    )}
+                    <InputContainer>
+                        <StyledLabel htmlFor="email">Email adresse</StyledLabel>
+                        <StyledInput type="text" id="email" name="email" placeholder="email" value={session.user?.email} readOnly/>
+                    </InputContainer>
+
+                  
+                    {data && data.length > 0 && (
+                    <SmallInputWrapper>
+                        <InputContainerSmall>
+                            <StyledLabel htmlFor="yourplants">Pflanzen</StyledLabel>
+                            <StyledInputSmall type="text" id="yourplants" name="yourplants" placeholder="your plants" value={data.length} readOnly />
+                        </InputContainerSmall> 
+                        <InputContainerSmall>
+                            <StyledLabel htmlFor="costs">Gesamtkosten</StyledLabel>
+                            <StyledInputSmall type="text" id="costs" name="costs" placeholder="costs" value={PlantCosts + ",00 €"} readOnly />
+                        </InputContainerSmall>
+                    </SmallInputWrapper>
+                    )}
+                    <StyledLogoutButton>
+                        <SubmitButtonLogOut onClick={() => signOut()}>Logout</SubmitButtonLogOut>
+                    </StyledLogoutButton>
+                    <Navbar />
+                </>
+            ):(
+                <>
                 <NavigationContainer>
                     <IconContainer href="/">
                         <ReactIconArrowBack IconComponent={IoArrowBackOutline}/>
                     </IconContainer>
                     <PageViewer>Profil</PageViewer>
                 </NavigationContainer>
-                <InputContainer>
-                    <StyledLabel htmlFor="name">Name</StyledLabel>
-                    <StyledInput type="text" id="name" name="name" placeholder="name" value={session.user?.name} readOnly/>
-                </InputContainer>
-                <InputContainer>
-                    <StyledLabel htmlFor="email">Email adresse</StyledLabel>
-                    <StyledInput type="text" id="email" name="email" placeholder="email" value={session.user?.email} readOnly/>
-                </InputContainer>
-                {data && data.length > 0 && (
-                <SmallInputWrapper>
-                    <InputContainerSmall>
-                        <StyledLabel htmlFor="yourplants">Pflanzen</StyledLabel>
-                        <StyledInputSmall type="text" id="yourplants" name="yourplants" placeholder="your plants" value={data.length} readOnly />
-                    </InputContainerSmall> 
-                    <InputContainerSmall>
-                        <StyledLabel htmlFor="costs">Gesamtkosten</StyledLabel>
-                        <StyledInputSmall type="text" id="costs" name="costs" placeholder="costs" value={PlantCosts + ",00 €"} readOnly />
-                    </InputContainerSmall>
-                </SmallInputWrapper>
+                <Headline>Jetzt kostenlos anmelden</Headline>
+                <StyledForm onSubmit={handleSignInWithCredentials}>
+                    <InputContainer>
+                        <StyledLabel htmlFor="email">Email adresse</StyledLabel>
+                        <StyledInput type="text" id="email" name="email" placeholder="email" value={googleSignIn ? "" : email} onChange={(e) => setEmail(e.target.value)} required />
+                    </InputContainer>
+                    <InputContainer>
+                        <StyledLabel htmlFor="password">Passwort</StyledLabel>
+                        <StyledInput type={typeSwitch} id="password" name="password" placeholder="Passwort" value={googleSignIn ? "" : password} onChange={(e) => setPassword(e.target.value)} required/>
+                        <VisibilityIconWrapper onTouchEnd={handlePasswortTypeVisibil} onTouchStart={handlePasswortTypeHidden}>
+                            <VisibilityIcon IconComponent={MdVisibility}/>
+                        </VisibilityIconWrapper>
+                    </InputContainer>
+                    <PasswordForgotContainer>
+                        <StyledPasswordForgotLink
+                            as="button"
+                            type="button"
+                            onClick={() => setForgotPassword(true)}
+                            >
+                            Passwort vergessen?
+                        </StyledPasswordForgotLink>
+                    </PasswordForgotContainer>
+                    <ButtonWrapper>
+                        <SubmitButton type="submit">Login</SubmitButton>
+                    </ButtonWrapper>
+                    <StyledLine><StyledDiv></StyledDiv><StyledParagraphLine>oder</StyledParagraphLine><StyledDiv></StyledDiv></StyledLine>
+                    <StyledGoogleWrapper>
+                            <StyledGoogleButton onClick={handleSignIn}><Image src="../icons/icons8-google.svg" alt="google-icon" width={22} height={22}/>Login mit Google</StyledGoogleButton>
+                    </StyledGoogleWrapper>
+                    <StyledRegisterLink href="/registration">Noch keinen Account? Jetzt Registrieren</StyledRegisterLink>
+                </StyledForm>
+            
+            {forgotPassword && (
+                    <SubmissionModal 
+                        onCancel={() => setForgotPassword(false)}
+                        onConfirm={handleSubmitForgotPassword}
+                    >
+                        <Headline>Passwort zurücksetzen</Headline>
+                        <StyledForm>
+                        <RenderInputField
+                            label={"E-mail Adresse"}
+                            type={"email"}
+                            name={"email"}
+                            placeholder={"z.B. max.mustermann@example.com"}
+                            formData={formData}
+                            handleChange={(event) => handleChange(event, setFormData)}
+                            required
+                        />
+                        </StyledForm>
+                    </SubmissionModal>
                 )}
-                <StyledLogoutButton>
-                    <SubmitButtonLogOut onClick={() => signOut()}>Logout</SubmitButtonLogOut>
-                </StyledLogoutButton>
-                <Navbar />
-            </>
-        ):(
-            <>
-            <NavigationContainer>
-                <IconContainer href="/">
-                    <ReactIconArrowBack IconComponent={IoArrowBackOutline}/>
-                </IconContainer>
-                <PageViewer>Profil</PageViewer>
-            </NavigationContainer>
-            <Headline>Jetzt kostenlos anmelden</Headline>
-            <StyledForm>
-                <InputContainer>
-                    <StyledLabel htmlFor="email">Email adresse</StyledLabel>
-                    <StyledInput type="text" id="email" name="email" placeholder="email" value={googleSignIn ? "" : email} onChange={(e) => setEmail(e.target.value)} required />
-                </InputContainer>
-                <InputContainer>
-                    <StyledLabel htmlFor="password">Passwort</StyledLabel>
-                    <StyledInput type={typeSwitch} id="password" name="password" placeholder="Passwort" value={googleSignIn ? "" : password} onChange={(e) => setPassword(e.target.value)} required/>
-                    <VisibilityIconWrapper onTouchEnd={handlePasswortTypeVisibil} onTouchStart={handlePasswortTypeHidden}>
-                        <VisibilityIcon IconComponent={MdVisibility}/>
-                    </VisibilityIconWrapper>
-                </InputContainer>
-                <ButtonWrapper>
-                    <SubmitButton type="submit">Login</SubmitButton>
-                </ButtonWrapper>
-                <StyledLine><StyledDiv></StyledDiv><StyledParagraphLine>oder</StyledParagraphLine><StyledDiv></StyledDiv></StyledLine>
-                <StyledGoogleWrapper>
-                        <StyledGoogleButton onClick={handleSignIn}><Image src="../icons/icons8-google.svg" alt="google-icon" width={22} height={22}/>Login mit Google</StyledGoogleButton>
-                </StyledGoogleWrapper>
-                <StyledRegisterLink href="/registration">Noch keinen Account? Jetzt Registrieren</StyledRegisterLink>
-            </StyledForm>
-        
-            </>
-        )}
-       </>
-  );
-} 
 
+        </>
+      )}
+    </>
+  );
+}
 
 
 
@@ -209,6 +352,23 @@ const StyledRegisterLink = styled(Link)`
 
 `;
 
+const PasswordForgotContainer =  styled.div`
+    display: flex;
+    justify-content: flex-end;
+    margin-right: 2rem;
+    margin-top: 0.5rem;
+`;
+
+const StyledPasswordForgotLink = styled(Link)`
+    color: var(--dark-brown-color);
+    text-decoration: none;
+    font-size: 0.8rem;
+    border: none;
+    background: none;
+    cursor: pointer;
+
+`;
+
 const StyledLabel = styled.label`
   color: var(--dark-font-color);
 `;
@@ -217,7 +377,7 @@ const InputContainer = styled.div`
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  margin: 2rem 2rem;
+  margin: 2rem 2rem 0.2rem 2rem;
   position: relative;
 `;
 
@@ -336,5 +496,4 @@ const StyledGoogleButton = styled.button`
     display: flex;
     gap: 0.3rem;
 `;
-
 

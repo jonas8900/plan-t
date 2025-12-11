@@ -1,9 +1,20 @@
-import Plant from '@/db/models/Plant';
+
+import dotenv from 'dotenv'
+dotenv.config({ path: '../../.env.local' })
+
+// import "dotenv/config"; 
+
+import Plant from "../../db/models/Plant.js";
 import webPush from 'web-push';
+
+import dbConnect from "../../db/connect.js";
+
+setInterval(() => { console.log(`Script started`); }, 5 * 1000);
 
 
 const publicKey = process.env.NEXT_PUBLIC_VAPID_KEY;
 const privateKey = process.env.PRIVATE_VAPID_KEY;
+
 
 
 if (!publicKey || !privateKey) {
@@ -16,8 +27,8 @@ if (!publicKey || !privateKey) {
     privateKey  
 
   );
-
 }
+
 
 export default async function handler(req, res) {
   if (req.method !== 'POST' && req.method !== 'GET') {
@@ -25,18 +36,28 @@ export default async function handler(req, res) {
   }
 
   try {
+
+    await dbConnect();
+
     const now = new Date();
 
     const currentDate = `${now.getDate().toString().padStart(2, '0')}.${(now.getMonth() + 1).toString().padStart(2, '0')}.${now.getFullYear()}, ${now.getHours()}:${now.getMinutes().toString().padStart(2, '0')}`;
     
     const futureTime = new Date(now.getTime() + 5 * 60000);
+
     const futureTimeString = `${futureTime.getDate().toString().padStart(2, '0')}.${(futureTime.getMonth() + 1).toString().padStart(2, '0')}.${futureTime.getFullYear()}, ${futureTime.getHours()}:${futureTime.getMinutes().toString().padStart(2, '0')}`;
+
+    setInterval(() => { console.log(`Prüfe Alarme zwischen ${currentDate} und ${futureTimeString}`); }, 5 * 1000);
+    
     
     const plantsWithAlarms = await Plant.find({
       alarmActive: true,
       alarmTime: { $gte: currentDate, $lte: futureTimeString }
     });
     
+    console.log(`Gefundene Pflanzen mit Alarm zwischen ${currentDate} und ${futureTimeString}:`, plantsWithAlarms);
+    setInterval(() => { console.log(`gefundene Pflanze: ${plantsWithAlarms}`); }, 15 * 1000);
+
 
     if (plantsWithAlarms.length === 0) {
       console.log("Keine Pflanzen mit aktivem Alarm gefunden.");
