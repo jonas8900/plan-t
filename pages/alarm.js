@@ -80,37 +80,37 @@ export default function Alarm() {
       const subscription = await requestPushSubscription();
 
       if (subscription) {
-        const saveSubscriptionResponse = await fetch("/api/saveSubscription", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            plantId: data.alarmplant,
-            subscription,
-          }),
-        });
+        // const saveSubscriptionResponse = await fetch("/api/saveSubscription", {
+        //   method: "POST",
+        //   headers: {
+        //     "Content-Type": "application/json",
+        //   },
+        //   body: JSON.stringify({
+        //     plantId: data.alarmplant,
+        //     subscription,
+        //   }),
+        // });
 
-        if (!saveSubscriptionResponse.ok) {
-          console.log("Fehler beim Speichern der Subscription");
-          throw new Error("Fehler beim Speichern der Subscription");
-        }
+        // if (!saveSubscriptionResponse.ok) {
+        //   console.log("Fehler beim Speichern der Subscription");
+        //   throw new Error("Fehler beim Speichern der Subscription");
+        // }
 
-        const addAlarmResponse = await fetch("/api/addAlarm", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            plantId: data.alarmplant,
-            alarmTime,
-            alarmActive: true,
-          }),
-        });
+        // const addAlarmResponse = await fetch("/api/addAlarm", {
+        //   method: "POST",
+        //   headers: {
+        //     "Content-Type": "application/json",
+        //   },
+        //   body: JSON.stringify({
+        //     plantId: data.alarmplant,
+        //     alarmTime,
+        //     alarmActive: true,
+        //   }),
+        // });
 
-        if (!addAlarmResponse.ok) {
-          throw new Error("Fehler beim Hinzufügen des Alarms");
-        }
+        // if (!addAlarmResponse.ok) {
+        //   throw new Error("Fehler beim Hinzufügen des Alarms");
+        // }
 
         alert("Alarm erfolgreich gesetzt!");
         toggleModal();
@@ -183,12 +183,13 @@ export default function Alarm() {
         <PageViewer>Alarm</PageViewer>
       </NavigationContainer>
       <StyledWrapper>
+        <StyledHeadline >Derzeit in Bearbeitung</StyledHeadline>
         {alarmData && alarmData.length > 0 ? (
           <>
             <StyledButton onClick={handleModal}>
               <ReactIconAdd IconComponent={MdAddCircle} />
             </StyledButton>
-            {alarmData.map((alarm) => (
+            {/* {alarmData.map((alarm) => (
               <AlarmDiv
                 key={alarm._id}
                 onMouseDown={() => handleTouchStart(alarm._id)}
@@ -209,7 +210,7 @@ export default function Alarm() {
                 />
                 <StyledLabelAlarmToggle htmlFor="toggle" />
               </AlarmDiv>
-            ))}
+            ))} */}
             {deleteModalOpen && (
               <Modal
                 isOpen={deleteModalOpen}
