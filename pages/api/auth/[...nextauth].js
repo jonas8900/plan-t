@@ -11,6 +11,24 @@ const rateLimiter = new RateLimiterMemory({
   duration: 60 * 5,   
 });
 
+const ipRateLimiter = new RateLimiterMemory({
+  points: 20,
+  duration: 60 * 15,
+});
+
+const RATE_LIMIT_MESSAGE =
+  "Zu viele fehlgeschlagene Anmeldeversuche. Bitte versuche es in ein paar Minuten erneut.";
+
+async function isRateLimited(limiter, key) {
+  const res = await limiter.get(key);
+  return !!res && res.consumedPoints >= limiter.points;
+}
+
+async function registerFailedAttempt(emailKey, ipKey) {
+  // consume() rejects once the limit is exceeded - that is expected here, so ignore it
+  await Promise.allSettled([rateLimiter.consume(emailKey), ipRateLimiter.consume(ipKey)]);
+}
+
 export const authOptions = {
     providers: [
         CredentialsProvider({
@@ -37,25 +55,26 @@ export const authOptions = {
 
             email = email.trim().toLowerCase();
 
-            try {
-              await rateLimiter.consume(ip);
-            } catch (rateLimiterRes) {
-              throw new Error(
-                "Zu viele Anfragen von deiner IP-Adresse. Bitte versuche es in 5 Minuten erneut."
-              );
+            const emailKey = `${ip}_${email}`;
+            if (
+              (await isRateLimited(rateLimiter, emailKey)) ||
+              (await isRateLimited(ipRateLimiter, ip))
+            ) {
+              throw new Error(RATE_LIMIT_MESSAGE);
             }
 
             await dbConnect();
 
             const user = await User.findOne({ email });
-            if (!user) {
+            const isValid = user ? await user.comparePassword(password) : false;
+
+            if (!isValid) {
+              await registerFailedAttempt(emailKey, ip);
               throw new Error("E-Mail oder Passwort ist falsch.");
             }
 
-            const isValid = await user.comparePassword(password);
-            if (!isValid) {
-              throw new Error("E-Mail oder Passwort ist falsch.");
-            }
+            // Successful login resets the counter for this IP + email combination
+            await rateLimiter.delete(emailKey);
 
             return {
               id: user._id.toString(),
@@ -144,10 +163,8 @@ export const authOptions = {
               needsUpdate = true;
             }
 
-            if (existingUser.provider !== "google") {
-              existingUser.provider = "google";
-              needsUpdate = true;
-            }
+            // Do not overwrite `provider` here: it stores the original sign-up method.
+            // Overwriting it with "google" would break the credentials login of that account.
 
             if (needsUpdate) {
               await existingUser.save();

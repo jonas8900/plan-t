@@ -1,39 +1,58 @@
 import dbConnect from "../../db/connect";
 import Plant from "../../db/models/Plant";
+import { calculateSuggestedAlarmDate } from "@/utils";
 
 export default async function handler(request, response) {
-    await dbConnect();
+  await dbConnect();
 
-    const { method, body, query } = request;
-    const { id } = query;
+  const { method, body, query } = request;
+  const { id } = query;
 
-    switch (method) {
-        case "PUT":
-            if (!id) {
-                return response.status(400).json({ error: "Plant ID is required" });
-            }
+  if (method !== "PUT") {
+    return response.status(405).json({ error: `Method ${method} Not Allowed` });
+  }
 
-            const requiredFields = ["plantname", "planttype", "lastwatering", "wateringinterval", "repotting"];
-            const missingFields = requiredFields.filter(field => !body[field]);
+  if (!id) {
+    return response.status(400).json({ error: "Plant ID is required" });
+  }
 
-            if (missingFields.length > 0) {
-                return response.status(400).json({ error: `Missing fields: ${missingFields.join(", ")}` });
-            }
+  const requiredFields = [
+    "plantname",
+    "planttype",
+    "lastwatering",
+    "wateringinterval",
+    "repotting",
+  ];
+  const missingFields = requiredFields.filter((field) => !body[field]);
 
-            try {
-                const updatedPlant = await Plant.findByIdAndUpdate(id, body, { new: true });
+  if (missingFields.length > 0) {
+    return response
+      .status(400)
+      .json({ error: `Missing fields: ${missingFields.join(", ")}` });
+  }
 
-                if (!updatedPlant) {
-                    return response.status(404).json({ error: "Plant not found" });
-                }
-
-                return response.status(200).json(updatedPlant);
-            } catch (error) {
-                console.error(error);
-                return response.status(500).json({ error: "Internal Server Error" });
-            }
-
-        default:
-            return response.status(405).json({ error: `Method ${method} Not Allowed` });
+  try {
+    const plant = await Plant.findById(id);
+    if (!plant) {
+      return response.status(404).json({ error: "Plant not found" });
     }
+
+    const wateringChanged =
+      String(plant.lastwatering) !== String(new Date(body.lastwatering)) ||
+      Number(plant.wateringinterval) !== Number(body.wateringinterval);
+
+    Object.assign(plant, body);
+
+    if (wateringChanged && plant.alarmTime) {
+      const updatedAlarmTime = calculateSuggestedAlarmDate(plant);
+      plant.alarmTime = updatedAlarmTime;
+      plant.nextAlarmTime = updatedAlarmTime;
+      plant.lastAlarmSentAt = null;
+    }
+
+    await plant.save();
+    return response.status(200).json(plant);
+  } catch (error) {
+    return response.status(500).json({ error: "Internal Server Error" });
+  }
 }

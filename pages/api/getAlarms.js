@@ -1,31 +1,28 @@
 import dbConnect from "@/db/connect";
 import Plant from "@/db/models/Plant";
-import { getSession } from "next-auth/react";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/pages/api/auth/[...nextauth]";
 
 export default async function handler(request, response) {
-    await dbConnect();
-    
-    console.log("getPlantsWithoutDetails.js");
- 
+  if (request.method !== "GET") {
+    return response.status(405).json({ error: "Methode nicht erlaubt" });
+  }
 
-    const session = await getSession({ req: request });
+  await dbConnect();
 
-    if (!session) {
-        return response.status(401).json({ error: "Nicht authentifiziert" });
-    }
+  const session = await getServerSession(request, response, authOptions);
+  if (!session?.user?.id) {
+    return response.status(401).json({ error: "Nicht authentifiziert" });
+  }
 
+  try {
+    const plants = await Plant.find({
+      userId: session.user.id,
+      alarmTime: { $exists: true, $ne: null },
+    }).sort({ alarmTime: 1 });
 
-    if (request.method === "GET") {
-        try {
-            const plants = await Plant.find({ alarmActive: { $exists: true } });
-            response.status(200).json(plants);
-        } catch (error) {
-            console.error(error);
-            response.status(400).json({ error: error.message });
-        }
-    } else {
-        response.status(405).json({ error: "Methode nicht erlaubt" });
-    }
+    return response.status(200).json(plants);
+  } catch (error) {
+    return response.status(400).json({ error: "Alarme konnten nicht geladen werden" });
+  }
 }
-
-

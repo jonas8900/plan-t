@@ -33,9 +33,11 @@ export default function Registration() {
       body: JSON.stringify(data),
     });
 
+    const responseData = await response.json();
+
     if (!response.ok) {
       setShowError(true);
-      setToastMessage("Etwas ist schiefgelaufen!");
+      responseData ? setToastMessage(responseData.error) : setToastMessage("Etwas ist schief gelaufen");
       setLoading(false);
       setTimeout(() => {
         setShowError(false);
@@ -44,7 +46,7 @@ export default function Registration() {
       return;
     } else {
       setShowSuccess(true);
-      setToastMessage("Erfolgreich Registriert! 🎉");
+      responseData ? setToastMessage(responseData.message) : setToastMessage("Benutzer erfolgreich angelegt ");
       setLoading(false);
       setTimeout(() => {
         setShowSuccess(false);
@@ -53,11 +55,12 @@ export default function Registration() {
         router.push("/profile");
       }, 5000);
     }
+
+
   }
 
   return (
     <>
-
       <PageHeader />
       {showError && <ErrorMessage message={toastMessage} />}
       {showSuccess && <SuccessMessage message={toastMessage} />}

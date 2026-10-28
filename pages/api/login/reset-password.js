@@ -10,12 +10,24 @@ export default async function handler(req, res) {
 
   await dbConnect();
 
-  const { token, newPassword } = req.body;
+  const { token, newPassword, confirmedPassword } = req.body;
 
-  console.log(token, newPassword);
-  if (!token || !newPassword) {
-    return res.status(400).json({ message: "Token und neues Passwort sind erforderlich" });
+  if (!token || !newPassword || !confirmedPassword) {
+    return res.status(400).json({ message: "Fülle bitte alle felder aus" });
   }
+
+  if(confirmedPassword !== newPassword) {
+    return res.status(400).json({ message: "Passwörter stimmen nicht überein" });
+  }
+  
+  const passwordRegex = /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$/;
+  const isValid = passwordRegex.test(newPassword);
+
+  if(!isValid) {
+    return res.status(400).json({ message: "Das Passwort entspricht nicht den Anforderungen" });
+  }
+
+
   const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
 
   try {
@@ -26,7 +38,7 @@ export default async function handler(req, res) {
     });
 
     if (!user) {
-      return res.status(400).json({ message: "Token ungültig oder abgelaufen" });
+      return res.status(400).json({ message: "Der Link ist ungültig oder abgelaufen" });
     }
 
     user.password = newPassword;

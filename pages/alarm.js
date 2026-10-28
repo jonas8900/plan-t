@@ -2,7 +2,7 @@ import PageHeader from "@/components/PageHeader";
 import PageViewer from "@/components/PageViewer";
 import ReactIcon from "@/components/Reacticon";
 import Link from "next/link";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { IoArrowBackOutline } from "react-icons/io5";
 import styled from "styled-components";
 import Navbar from "@/components/Navbar";
@@ -10,8 +10,16 @@ import { useSession } from "next-auth/react";
 import NeedToLogin from "@/components/NeedToLoginScreen";
 import NoAlarmsSet from "@/components/NoAlarmsSet";
 import Modal from "@/components/Modals/InfoModal";
+import ErrorMessage from "@/components/Toast/ErrorMessage";
+import SuccessMessage from "@/components/Toast/SuccessMessage";
 import useSWR from "swr";
-import { isPushSupported, requestPushSubscription } from "@/utils";
+import {
+  calculateSuggestedAlarmDate,
+  formatAlarmDateTime,
+  formatDateTimeLocalInput,
+  isPushSupported,
+  requestPushSubscription,
+} from "@/utils";
 import { MdAddCircle } from "react-icons/md";
 import { FaTrash } from "react-icons/fa";
 
@@ -19,131 +27,258 @@ export default function Alarm() {
   const { data: session } = useSession();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
-  const { data: plants, isLoading } = useSWR("/api/getPlantsWithoutDetails");
-  const { data: alarmData } = useSWR("/api/getAlarms");
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-  const [alarmID, setAlarmID] = useState(null);
-  const [isAlarmActive, setIsAlarmActive] = useState({});
+  const [selectedAlarmId, setSelectedAlarmId] = useState(null);
+  const [selectedPlantId, setSelectedPlantId] = useState("");
+  const [alarmTimeInput, setAlarmTimeInput] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [toast, setToast] = useState({ type: null, message: "" });
   const timeoutRef = useRef(null);
+  const toastTimerRef = useRef(null);
+
+  const { data: plants, isLoading } = useSWR(
+    session ? "/api/getPlantsWithoutDetails" : null
+  );
+  const { data: alarmData, mutate: mutateAlarms } = useSWR(
+    session ? "/api/getAlarms" : null
+  );
+
+  const plantList = useMemo(
+    () => (Array.isArray(plants) ? plants : []),
+    [plants]
+  );
+
+  const selectedPlant = useMemo(
+    () => plantList.find((plant) => plant._id === selectedPlantId) || null,
+    [plantList, selectedPlantId]
+  );
+
+  function applySuggestedAlarmForPlant(plant) {
+    if (!plant) {
+      setAlarmTimeInput("");
+      return;
+    }
+    const suggestedDate = calculateSuggestedAlarmDate(plant);
+    setAlarmTimeInput(formatDateTimeLocalInput(suggestedDate));
+  }
+
+  function showNotificationToast(type, message) {
+    if (toastTimerRef.current) {
+      clearTimeout(toastTimerRef.current);
+    }
+    setToast({ type, message });
+    toastTimerRef.current = setTimeout(() => {
+      setToast({ type: null, message: "" });
+    }, 5000);
+  }
+
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+      if (toastTimerRef.current) {
+        clearTimeout(toastTimerRef.current);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    if (isModalOpen && plantList.length > 0 && !selectedPlantId) {
+      const initialPlant = plantList[0];
+      setSelectedPlantId(initialPlant._id);
+      applySuggestedAlarmForPlant(initialPlant);
+    }
+  }, [isModalOpen, plantList, selectedPlantId]);
+
+  useEffect(() => {
+    if (!session) {
+      return undefined;
+    }
+
+    async function triggerDueAlarmsCheck() {
+      try {
+        const response = await fetch("/api/checkAlarmsCron");
+        if (!response.ok) {
+          return;
+        }
+        const result = await response.json();
+        if (result?.sentCount > 0) {
+          mutateAlarms();
+        }
+      } catch {
+        return;
+      }
+    }
+
+    triggerDueAlarmsCheck();
+    const intervalId = setInterval(triggerDueAlarmsCheck, 30 * 1000);
+
+    return () => clearInterval(intervalId);
+  }, [session, mutateAlarms]);
 
   if (!session) {
-    return (
-      <>
-        <NeedToLogin />
-      </>
-    );
+    return <NeedToLogin />;
   }
 
   if (isLoading) {
     return <div>Loading...</div>;
   }
 
+  function openCreateModal() {
+    if (plantList.length > 0) {
+      const initialPlant =
+        plantList.find((plant) => plant._id === selectedPlantId) || plantList[0];
+      setSelectedPlantId(initialPlant._id);
+      applySuggestedAlarmForPlant(initialPlant);
+    }
+    setIsModalOpen(true);
+  }
+
+  function closeCreateModal() {
+    setIsClosing(true);
+    setTimeout(() => {
+      setIsModalOpen(false);
+      setIsClosing(false);
+    }, 300);
+  }
+
   function toggleModal() {
     if (isModalOpen) {
-      setIsClosing(true);
-      setTimeout(() => {
-        setIsModalOpen(false);
-        setIsClosing(false);
-      }, 300);
+      closeCreateModal();
     } else {
-      setIsModalOpen(true);
+      openCreateModal();
     }
   }
 
-  function handleModal() {
-    setIsModalOpen(!isModalOpen);
+  function handlePlantSelectionChange(event) {
+    const newPlantId = event.target.value;
+    setSelectedPlantId(newPlantId);
+    const chosenPlant = plantList.find((plant) => plant._id === newPlantId);
+    applySuggestedAlarmForPlant(chosenPlant);
+  }
+
+  function openDeleteConfirmation(id) {
+    setSelectedAlarmId(id);
+    setDeleteModalOpen(true);
   }
 
   function handleTouchStart(id) {
     timeoutRef.current = setTimeout(() => {
-      setDeleteModalOpen(true);
-      setAlarmID(id);
+      openDeleteConfirmation(id);
     }, 500);
-    console.log("pressed");
-    
   }
+
   function handleTouchEnd() {
-    clearTimeout(timeoutRef.current);
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
   }
 
   async function handleSubmit(event) {
     event.preventDefault();
-    console.log("saved");
+    setSubmitting(true);
 
-    const formData = new FormData(event.target);
-    const data = Object.fromEntries(formData);
+    const alarmTime = new Date(alarmTimeInput);
 
-    const alarmTime = new Date(data.alarmtime);
-
+    if (!selectedPlantId || Number.isNaN(alarmTime.getTime())) {
+      showNotificationToast(
+        "error",
+        "Bitte wähle eine Pflanze und eine gültige Uhrzeit."
+      );
+      setSubmitting(false);
+      return;
+    }
 
     try {
-      const subscription = await requestPushSubscription();
-
-      if (subscription) {
-        // const saveSubscriptionResponse = await fetch("/api/saveSubscription", {
-        //   method: "POST",
-        //   headers: {
-        //     "Content-Type": "application/json",
-        //   },
-        //   body: JSON.stringify({
-        //     plantId: data.alarmplant,
-        //     subscription,
-        //   }),
-        // });
-
-        // if (!saveSubscriptionResponse.ok) {
-        //   console.log("Fehler beim Speichern der Subscription");
-        //   throw new Error("Fehler beim Speichern der Subscription");
-        // }
-
-        // const addAlarmResponse = await fetch("/api/addAlarm", {
-        //   method: "POST",
-        //   headers: {
-        //     "Content-Type": "application/json",
-        //   },
-        //   body: JSON.stringify({
-        //     plantId: data.alarmplant,
-        //     alarmTime,
-        //     alarmActive: true,
-        //   }),
-        // });
-
-        // if (!addAlarmResponse.ok) {
-        //   throw new Error("Fehler beim Hinzufügen des Alarms");
-        // }
-
-        alert("Alarm erfolgreich gesetzt!");
-        toggleModal();
-      } else {
-        alert("Push-Benachrichtigungen konnten nicht aktiviert werden");
+      if (!isPushSupported()) {
+        throw new Error(
+          "Push-Benachrichtigungen werden von diesem Browser nicht unterstützt."
+        );
       }
+
+      const subscription = await requestPushSubscription();
+      if (!subscription) {
+        throw new Error(
+          "Push-Benachrichtigungen konnten nicht aktiviert werden."
+        );
+      }
+
+      const saveSubscriptionResponse = await fetch("/api/saveSubscription", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          plantId: selectedPlantId,
+          subscription,
+        }),
+      });
+
+      if (!saveSubscriptionResponse.ok) {
+        throw new Error("Fehler beim Speichern der Push-Subscription.");
+      }
+
+      const addAlarmResponse = await fetch("/api/addAlarm", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          plantId: selectedPlantId,
+          alarmTime: alarmTime.toISOString(),
+          alarmActive: true,
+        }),
+      });
+
+      if (!addAlarmResponse.ok) {
+        throw new Error("Fehler beim Speichern des Alarms.");
+      }
+
+      await mutateAlarms();
+      closeCreateModal();
+      showNotificationToast("success", "Wiederkehrender Alarm erfolgreich gesetzt!");
     } catch (error) {
-      console.error(error);
-      alert("Es gab ein Problem beim Hinzufügen des Alarms.");
+      showNotificationToast(
+        "error",
+        error.message || "Es gab ein Problem beim Hinzufügen des Alarms."
+      );
+    } finally {
+      setSubmitting(false);
     }
   }
 
   async function handleDeleteAlarm(id) {
-    console.log(id);
-    const response = await fetch("/api/deleteAlarms", {
-      method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ id }),
-    });
+    if (!id) {
+      return;
+    }
 
-    if (response.ok) {
-      alert("Alarm erfolgreich gelöscht!");
+    try {
+      const response = await fetch("/api/deleteAlarms", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ id }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Es gab ein Problem beim Löschen des Alarms.");
+      }
+
+      await mutateAlarms();
       setDeleteModalOpen(false);
-    } else {
-      alert("Es gab ein Problem beim Löschen des Alarms.");
+      setSelectedAlarmId(null);
+      showNotificationToast("success", "Alarm erfolgreich gelöscht!");
+    } catch (error) {
+      showNotificationToast(
+        "error",
+        error.message || "Es gab ein Problem beim Löschen des Alarms."
+      );
     }
   }
 
   async function handleToggle(id) {
-    console.log("ID:", id);
-
     try {
       const response = await fetch("/api/updateAlarm", {
         method: "PUT",
@@ -154,28 +289,36 @@ export default function Alarm() {
       });
 
       if (!response.ok) {
-        throw new Error("Fehler beim Aktualisieren des Alarms");
+        throw new Error("Fehler beim Aktualisieren des Alarms.");
       }
 
-      const data = await response.json();
-      if (data) {
-        setIsAlarmActive({
-          ...isAlarmActive,
-          [data.plant.alarmID]: data.plant.alarmActive,
-        });
-      }
+      await mutateAlarms();
     } catch (error) {
-      console.error("Fehler beim Aktualisieren des Alarms:", error);
+      showNotificationToast(
+        "error",
+        error.message || "Fehler beim Aktualisieren des Alarms."
+      );
     }
   }
 
-  function handleCheckIfAlarmIsActive(alarmID) {
-    return isAlarmActive[alarmID];
-  }
+  const alarms = Array.isArray(alarmData) ? alarmData : [];
+  const selectedIntervalDays =
+    Number(selectedPlant?.wateringinterval) > 0
+      ? Number(selectedPlant.wateringinterval)
+      : 7;
+  const selectedLastWateringLabel = selectedPlant?.lastwatering
+    ? new Date(selectedPlant.lastwatering).toLocaleDateString("de-DE", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+      })
+    : null;
 
   return (
     <>
       <PageHeader />
+      {toast.type === "error" && <ErrorMessage message={toast.message} />}
+      {toast.type === "success" && <SuccessMessage message={toast.message} />}
       <NavigationContainer>
         <IconContainer href="/">
           <ReactIconArrowBack IconComponent={IoArrowBackOutline} />
@@ -183,87 +326,134 @@ export default function Alarm() {
         <PageViewer>Alarm</PageViewer>
       </NavigationContainer>
       <StyledWrapper>
-        <StyledHeadline >Derzeit in Bearbeitung</StyledHeadline>
-        {alarmData && alarmData.length > 0 ? (
+        {alarms.length > 0 ? (
           <>
-            <StyledButton onClick={handleModal}>
+            <StyledButton type="button" onClick={toggleModal}>
               <ReactIconAdd IconComponent={MdAddCircle} />
             </StyledButton>
-            {/* {alarmData.map((alarm) => (
-              <AlarmDiv
-                key={alarm._id}
-                onMouseDown={() => handleTouchStart(alarm._id)}
-                onMouseUp={handleTouchEnd}
-                onTouchStart={() => handleTouchStart(alarm._id)}
-                onTouchEnd={handleTouchEnd}>
-                <StyledHeadline>{alarm.alarmTime.split(",")[1]}</StyledHeadline>
-                <StyledContainerForAlarmHeadline>
-                  <StyledPlantName>{alarm.plantname}</StyledPlantName>
-                  <p>{alarm.alarmTime.split(",")[0]}</p>
-                </StyledContainerForAlarmHeadline>
+            {alarms.map((alarm) => {
+              const { dateLabel, timeLabel } = formatAlarmDateTime(
+                alarm.alarmTime
+              );
+              const intervalDays =
+                Number(alarm.wateringinterval) > 0
+                  ? Number(alarm.wateringinterval)
+                  : 7;
+              const toggleId = `toggle-${alarm._id}`;
+              const isChecked = Boolean(alarm.alarmActive);
 
-                <StyledAlarmInputCheckbox
-                  type="checkbox"
-                  id="toggle"
-                  checked={isAlarmActive[alarm.alarmID] == true ? true : false}
-                  onChange={() => handleToggle(alarm._id)}
-                />
-                <StyledLabelAlarmToggle htmlFor="toggle" />
-              </AlarmDiv>
-            ))} */}
+              return (
+                <AlarmDiv
+                  key={alarm._id}
+                  onMouseDown={() => handleTouchStart(alarm._id)}
+                  onMouseUp={handleTouchEnd}
+                  onMouseLeave={handleTouchEnd}
+                  onTouchStart={() => handleTouchStart(alarm._id)}
+                  onTouchEnd={handleTouchEnd}
+                >
+                  <StyledHeadline>{timeLabel}</StyledHeadline>
+                  <StyledContainerForAlarmHeadline>
+                    <StyledPlantName>{alarm.plantname}</StyledPlantName>
+                    <p>
+                      {dateLabel} · alle {intervalDays} Tage
+                    </p>
+                  </StyledContainerForAlarmHeadline>
+
+                  <StyledAlarmInputCheckbox
+                    type="checkbox"
+                    id={toggleId}
+                    checked={isChecked}
+                    onChange={() => handleToggle(alarm._id)}
+                  />
+                  <StyledLabelAlarmToggle htmlFor={toggleId} />
+
+                  <StyledDeleteIconButton
+                    type="button"
+                    aria-label={`Alarm für ${alarm.plantname} löschen`}
+                    onClick={() => openDeleteConfirmation(alarm._id)}
+                  >
+                    <StyledTrashIcon />
+                  </StyledDeleteIconButton>
+                </AlarmDiv>
+              );
+            })}
             {deleteModalOpen && (
               <Modal
                 isOpen={deleteModalOpen}
                 isClosing={isClosing}
                 onClose={() => setDeleteModalOpen(false)}
                 modaltext="Möchtest du diesen Alarm wirklich löschen?"
-                modalheadline="Alarm löschen">
+                modalheadline="Alarm löschen"
+              >
                 <StyledButtonWrapper>
-                  <StlyedModalButton
+                  <StyledModalButton
+                    type="button"
                     onClick={() => setDeleteModalOpen(false)}
-                    $background={"var(--dark-font-color)"}>
+                    $background={"var(--dark-font-color)"}
+                  >
                     Abbrechen
-                  </StlyedModalButton>
-                  <StlyedModalButton
-                    onClick={() => handleDeleteAlarm(alarmID)}
-                    $background={"var(--dark-green-color)"}>
+                  </StyledModalButton>
+                  <StyledModalButton
+                    type="button"
+                    onClick={() => handleDeleteAlarm(selectedAlarmId)}
+                    $background={"var(--dark-green-color)"}
+                  >
                     Löschen
-                  </StlyedModalButton>
+                  </StyledModalButton>
                 </StyledButtonWrapper>
               </Modal>
             )}
           </>
         ) : (
-          <NoAlarmsSet onClick={handleModal} />
+          <NoAlarmsSet onClick={toggleModal} />
         )}
         {isModalOpen && (
           <Modal
             isOpen={isModalOpen}
             isClosing={isClosing}
             onClose={toggleModal}
-            modaltext="Lege hier deine Alarme an, um dich an deine täglichen Aufgaben zu erinnern."
-            modalheadline="Alarme">
+            modaltext="Der nächste Gießtermin wird automatisch aus dem letzten Gießen und dem Gießintervall vorgeschlagen und wiederholt sich danach im Intervall."
+            modalheadline="Gieß-Alarm"
+          >
             <StyledForm onSubmit={handleSubmit}>
               <StyledLabel htmlFor="alarmplant">
                 Wähle deine Pflanze
               </StyledLabel>
-              <StyledInputSelect id="alarmplant" name="alarmplant" required>
-                {plants &&
-                  plants.map((plant) => (
-                    <StyledInputOption key={plant._id} value={plant._id}>
-                      {plant.plantname}
-                    </StyledInputOption>
-                  ))}
+              <StyledInputSelect
+                id="alarmplant"
+                name="alarmplant"
+                value={selectedPlantId}
+                onChange={handlePlantSelectionChange}
+                required
+              >
+                {plantList.map((plant) => (
+                  <StyledInputOption key={plant._id} value={plant._id}>
+                    {plant.plantname}
+                  </StyledInputOption>
+                ))}
               </StyledInputSelect>
-              <StyledLabel htmlFor="alarmtime">Alarmzeit:</StyledLabel>
+              {selectedPlant && (
+                <StyledHintText>
+                  Wiederkehrend alle {selectedIntervalDays} Tage
+                  {selectedLastWateringLabel
+                    ? ` · Zuletzt gegossen am ${selectedLastWateringLabel}`
+                    : ""}
+                </StyledHintText>
+              )}
+              <StyledLabel htmlFor="alarmtime">
+                Nächste Erinnerung (Vorschlag):
+              </StyledLabel>
               <StyledDateInputWrapper>
                 <StyledAlarmInput
                   type="datetime-local"
                   id="alarmtime"
                   name="alarmtime"
-                  required></StyledAlarmInput>
-                <StyledSubmitButton type="submit">
-                  Alarm hinzufügen
+                  value={alarmTimeInput}
+                  onChange={(event) => setAlarmTimeInput(event.target.value)}
+                  required
+                />
+                <StyledSubmitButton type="submit" disabled={submitting}>
+                  {submitting ? "Speichert..." : "Alarm hinzufügen"}
                 </StyledSubmitButton>
               </StyledDateInputWrapper>
             </StyledForm>
@@ -278,7 +468,7 @@ export default function Alarm() {
 const StyledHeadline = styled.h1`
   font-size: 1.2rem;
   color: var(--dark-font-color);
-  margin-left: 1.2rem;
+  margin-left: 0.6rem;
 `;
 
 const StyledPlantName = styled.p`
@@ -301,6 +491,13 @@ const StyledContainerForAlarmHeadline = styled.div`
   }
 `;
 
+const StyledHintText = styled.p`
+  font-size: 0.78rem;
+  color: var(--dark-font-color);
+  align-self: flex-start;
+  margin: 0.4rem 0 0 0;
+`;
+
 const StyledLabelAlarmToggle = styled.label`
   display: inline-block;
   width: 50px;
@@ -311,7 +508,6 @@ const StyledLabelAlarmToggle = styled.label`
   cursor: pointer;
   transition: background-color 0.3s;
   justify-self: flex-end;
-  margin-left: 2rem;
   &:before {
     content: "";
     position: absolute;
@@ -329,13 +525,11 @@ const StyledAlarmInputCheckbox = styled.input`
   display: none;
 
   &:checked + label {
-    /* background-color: #4caf50; */
     background-color: ${({ checked }) =>
       checked ? "var(--dark-green-color)" : "#ccc"};
   }
 
   &:checked + label:before {
-    /* transform: translateX(26px); */
     transform: ${({ checked }) =>
       checked ? "translateX(26px)" : "translateX(0)"};
   }
@@ -382,7 +576,6 @@ const StyledInputSelect = styled.select`
 `;
 
 const StyledAlarmInput = styled.input`
-  width: 40%;
   padding: 0.5rem;
   border: 1px solid #cecece;
   border-radius: 5px;
@@ -399,6 +592,7 @@ const StyledWrapper = styled.div`
   justify-content: center;
   margin: auto;
   height: 100%;
+  padding-bottom: 5rem;
 `;
 
 const StyledSubmitButton = styled.button`
@@ -407,6 +601,7 @@ const StyledSubmitButton = styled.button`
   padding: 0.5rem 1rem;
   border: none;
   border-radius: 5px;
+  cursor: pointer;
 `;
 
 const ReactIconArrowBack = styled(ReactIcon)`
@@ -437,23 +632,31 @@ const IconContainer = styled(Link)`
 
 const AlarmDiv = styled.div`
   display: grid;
-  grid-template-columns: 1fr 2fr 1fr 1fr;
-
+  grid-template-columns: 1fr 2fr auto auto;
   justify-content: space-between;
   align-items: center;
   width: 90%;
   border: 1px solid rgba(0, 0, 0, 0.13);
   border-radius: 20px;
-  gap: 2rem;
-  margin: 1rem;
-  padding: 0.5rem;
+  gap: 1rem;
+  margin: 0.75rem 1rem;
+  padding: 0.5rem 1rem;
   box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.13);
+`;
+
+const StyledDeleteIconButton = styled.button`
+  background: transparent;
+  border: none;
+  padding: 0.4rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
 `;
 
 const StyledTrashIcon = styled(FaTrash)`
   font-size: 1rem;
   color: var(--dark-font-color);
-  cursor: pointer;
 `;
 
 const StyledButton = styled.button`
@@ -468,13 +671,14 @@ const StyledButtonWrapper = styled.div`
   justify-content: center;
 `;
 
-const StlyedModalButton = styled.button`
+const StyledModalButton = styled.button`
   background-color: ${({ $background }) => $background};
   color: white;
   padding: 0.5rem 1rem;
   border: none;
   border-radius: 5px;
   margin: 1rem;
+  cursor: pointer;
 `;
 
 const ReactIconAdd = styled(ReactIcon)`

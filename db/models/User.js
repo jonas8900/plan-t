@@ -33,7 +33,6 @@ const userSchema = new Schema({
 
 userSchema.pre("save", async function (next) {
   try {
-    if (this.provider !== "credentials") return next();
     if (!this.isModified("password") || !this.password) return next();
 
     const salt = await bcrypt.genSalt(10);
@@ -45,8 +44,6 @@ userSchema.pre("save", async function (next) {
 });
 
 userSchema.methods.comparePassword = async function (candidatePassword) {
-  if (this.provider !== "credentials") return false;
-
   let hash = this.password;
   if (!hash) {
     const fresh = await this.constructor.findById(this._id).select("+password");

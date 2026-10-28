@@ -7,12 +7,13 @@ export default function ErrorMessage({ message = "Etwas ist schiefgelaufen!" }) 
   const [isVisible, setIsVisible] = useState(true);
 
   useEffect(() => {
+    setIsVisible(true);
     const timer = setTimeout(() => {
       setIsVisible(false);
     }, 5000);
 
     return () => clearTimeout(timer);
-  }, []);
+  }, [message]);
 
   return (
     <AnimatePresence>
@@ -48,8 +49,6 @@ const ToastContainer = styled(motion.div)`
   gap: 0.75rem;
   z-index: 9999;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
-
-
 `;
 
 const IconWrapper = styled.div`

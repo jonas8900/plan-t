@@ -2,7 +2,7 @@ import PageHeader from "@/components/PageHeader";
 import PageViewer from "@/components/PageViewer";
 import ReactIcon from "@/components/Reacticon";
 import Link from "next/link";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useState } from "react";
 import { IoArrowBackOutline } from "react-icons/io5";
 import styled from "styled-components";
 import { MdVisibility } from "react-icons/md";
@@ -12,7 +12,6 @@ import { useSession, signIn, signOut } from "next-auth/react";
 import useSWR from "swr";
 import SubmissionModal from "@/components/Modals/SubmissionModal";
 import RenderInputField from "@/components/renderInputField";
-import { motion } from "framer-motion";
 import { handleChange } from "@/lib/helper";
 import ErrorMessage from "@/components/Toast/ErrorMessage";
 import SuccessMessage from "@/components/Toast/SuccessMessage";
@@ -47,8 +46,6 @@ export default function Profile() {
         }
     }
 
-
-
     function handlePasswortTypeHidden() {
         setTypeSwitch('text');
     }
@@ -72,7 +69,11 @@ export default function Profile() {
         });
         if (result.error) {
             setShowError(true);
-            setToastMessage("Ungültige E-Mail oder Passwort.");
+            setToastMessage(
+                result.error && result.error !== "CredentialsSignin"
+                    ? result.error
+                    : "Ungültige E-Mail oder Passwort."
+            );
             setLoading(false);
             setTimeout(() => {
                 setShowError(false);
@@ -235,7 +236,7 @@ export default function Profile() {
                     </ButtonWrapper>
                     <StyledLine><StyledDiv></StyledDiv><StyledParagraphLine>oder</StyledParagraphLine><StyledDiv></StyledDiv></StyledLine>
                     <StyledGoogleWrapper>
-                            <StyledGoogleButton onClick={handleSignIn}><Image src="../icons/icons8-google.svg" alt="google-icon" width={22} height={22}/>Login mit Google</StyledGoogleButton>
+                            <StyledGoogleButton type="button" onClick={handleSignIn}><Image src="../icons/icons8-google.svg" alt="google-icon" width={22} height={22}/>Login mit Google</StyledGoogleButton>
                     </StyledGoogleWrapper>
                     <StyledRegisterLink href="/registration">Noch keinen Account? Jetzt Registrieren</StyledRegisterLink>
                 </StyledForm>

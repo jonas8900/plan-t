@@ -1,8 +1,7 @@
 import { useState } from "react";
 import styled from "styled-components";
 import RenderInputField from "../renderInputField";
-import Image from "next/image";
-import { IoMdCloseCircle } from "react-icons/io";
+
 import { handleChange } from "@/lib/helper";
 
 export default function RegistrationForm({ handleSubmit, loading }) {
@@ -11,6 +10,7 @@ export default function RegistrationForm({ handleSubmit, loading }) {
     password: "",
     name: "",
     username: "",
+    passwordcompare: "",
   });
 
 
@@ -53,6 +53,17 @@ export default function RegistrationForm({ handleSubmit, loading }) {
           type={"password"}
           name={"password"}
           placeholder={"Ihr Passwort"}
+          infotext={"Das Passwort benötigt mindestens 8 Zeichen, eine Zahl, einen Klein- sowie einen Großbuchstaben und ein Sonderzeichen"}
+          formData={formData}
+          handleChange={(event) => handleChange(event, setFormData)}
+          required
+        />
+
+        <RenderInputField
+          label={"Passwort wiederholen"}
+          type={"password"}
+          name={"passwordcompare"}
+          placeholder={"Ihr Passwort wiederholen"}
           formData={formData}
           handleChange={(event) => handleChange(event, setFormData)}
           required

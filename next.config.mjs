@@ -1,8 +1,8 @@
 import withPWAInit from "next-pwa";
 
-/** @type {import('next').NextConfig} */
 const withPWA = withPWAInit({
   dest: "public",
+  importScripts: ["/service-worker.js"],
 });
 
 const nextConfig = {

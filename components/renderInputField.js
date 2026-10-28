@@ -5,6 +5,7 @@ export default function RenderInputField({
   label,
   type,
   placeholder,
+  infotext,
   formData,
   handleChange,
   required,
@@ -26,6 +27,7 @@ export default function RenderInputField({
         required={required}
         {...additionalprops}
       />
+      {infotext &&(<StyledInfoText>{infotext}</StyledInfoText>)}
     </InputContainer>
   );
 }
@@ -48,4 +50,10 @@ const StyledInput = styled.input`
   border-radius: 5px;
   font-family: poppins;
   font-size: 0.9rem;
+`;
+
+const StyledInfoText = styled.p`
+  color: gray;
+  font-size: 0.7rem;
+  margin: 0;
 `;

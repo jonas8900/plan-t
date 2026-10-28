@@ -20,6 +20,9 @@ export default async function handler(request, response) {
 
 
         try {
+            console.log("Sending request to n8n webhook URL:", N8N_WEBHOOK_URL);
+            console.log("Internal secret:", process.env.N8N_INTERNAL_SECRET);
+    
             const n8nResponse = await fetch(N8N_WEBHOOK_URL, {
                 method: "POST",
                 headers: {

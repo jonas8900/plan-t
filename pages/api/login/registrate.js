@@ -9,15 +9,24 @@ export default async function handler(req, res) {
   }
 
 
-  const { email, password, name, username } = req.body;
+  const { email, password, name, username, passwordcompare } = req.body;
 
-  if (!email || !password || password.length < 8) {
+  if (!email || !password) {
     return res.status(400).json({ error: "E-Mail und Passwort sind erforderlich" });
   }
 
-  await dbConnect(); 
+  if(passwordcompare !== password) {
+    return res.status(400).json({ error: "Passwörter stimmen nicht überein" });
+  }
+  
+  const passwordRegex = /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$/;
+  const isValid = passwordRegex.test(password);
 
-  console.log(email, password, name, username);
+  if(!isValid) {
+    return res.status(400).json({ error: "Das Passwort entspricht nicht den Anforderungen" });
+  }
+
+  await dbConnect(); 
 
   try {
     const existingUser = await User.findOne({ email });
@@ -28,7 +37,7 @@ export default async function handler(req, res) {
     const newUser = new User({ email, password, name, username });
     await newUser.save();
   
-      return res.status(201).json({ message: "Benutzer erstellt & E-Mail gesendet!" });
+      return res.status(201).json({ message: "Benutzer erstellt!" });
   } catch (error) {
     res.status(500).json({ error: "Interner Serverfehler" });
   }

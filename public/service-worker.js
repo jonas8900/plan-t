@@ -1,34 +1,57 @@
-self.addEventListener('install', (event) => {
-  console.log('Service Worker installing.');
+self.addEventListener("install", () => {
+  self.skipWaiting();
 });
 
-self.addEventListener('activate', (event) => {
-  console.log('Service Worker activating.');
+self.addEventListener("activate", (event) => {
+  event.waitUntil(self.clients.claim());
 });
 
-self.addEventListener('fetch', (event) => {
-  console.log('Fetching:', event.request.url);
-});
+function parsePushPayload(event) {
+  if (!event.data) {
+    return {};
+  }
 
-self.addEventListener('push', (event) => {
-  console.log('Push-Ereignis empfangen:', event);
+  try {
+    return event.data.json();
+  } catch {
+    return { body: event.data.text() };
+  }
+}
 
-  const data = event.data ? event.data.json() : {};
-  console.log('Empfangene Daten:', data);
+self.addEventListener("push", (event) => {
+  const data = parsePushPayload(event);
 
-  const title = data.title || 'Testbenachrichtigung';
+  const title = data.title || "Plan-T Erinnerung";
   const options = {
-    body: data.body || 'Hier ist deine Testnachricht!',
-    icon: data.icon || '/icon-192x192.png',
+    body: data.body || "Es gibt eine neue Erinnerung für deine Pflanzen.",
+    icon: data.icon || "/icons/icon-192x192.png",
+    badge: "/icons/icon-192x192.png",
+    data: {
+      url: data.url || "/alarm",
+    },
   };
 
+  event.waitUntil(self.registration.showNotification(title, options));
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const targetUrl = event.notification.data?.url || "/alarm";
+
   event.waitUntil(
-    self.registration.showNotification(title, options)
-      .then(() => {
-        console.log('Benachrichtigung wurde angezeigt');
-      })
-      .catch((err) => {
-        console.error('Fehler beim Anzeigen der Benachrichtigung:', err);
+    self.clients
+      .matchAll({ type: "window", includeUncontrolled: true })
+      .then((clientList) => {
+        for (const client of clientList) {
+          if ("focus" in client) {
+            client.navigate(targetUrl);
+            return client.focus();
+          }
+        }
+        if (self.clients.openWindow) {
+          return self.clients.openWindow(targetUrl);
+        }
+        return null;
       })
   );
 });

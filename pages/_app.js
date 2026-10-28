@@ -2,28 +2,21 @@ import Head from "next/head";
 import GlobalStyle from "../styles";
 import { SWRConfig } from "swr/_internal";
 import { SessionProvider } from "next-auth/react";
-import { SpeedInsights } from "@vercel/speed-insights/next"
-import { Analytics } from "@vercel/analytics/react"
+import { SpeedInsights } from "@vercel/speed-insights/next";
+import { Analytics } from "@vercel/analytics/react";
 import { useEffect } from "react";
 import styled from "styled-components";
 
 const fetcher = (url) => fetch(url).then((response) => response.json());
 
 export default function App({ Component, pageProps: { session, ...pageProps } }) {
-
     useEffect(() => {
-        if ('serviceWorker' in navigator) {
-          navigator.serviceWorker
-            .register('/service-worker.js')
-            .then((registration) => {
-              console.log('Service Worker registriert:', registration);
-            })
-            .catch((error) => {
-              console.error('Fehler bei der Service Worker-Registrierung:', error);
+        if (process.env.NODE_ENV === "development" && "serviceWorker" in navigator) {
+            navigator.serviceWorker.register("/service-worker.js").catch((error) => {
+                console.error("Fehler bei der Service Worker-Registrierung:", error);
             });
         }
-      }, []);
-
+    }, []);
 
     return (
         <>
@@ -67,7 +60,6 @@ export default function App({ Component, pageProps: { session, ...pageProps } })
         </>
     );
 }
-
 
 const StyledComponent = styled.div`
    max-width: 770px;
