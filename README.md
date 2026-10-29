@@ -33,10 +33,11 @@ Thank you for taking the time to explore Plan-T!
 ## Highlights
 
 ### Automatic Plant Recognition and Creation
+https://github.com/user-attachments/assets/8922d09f-4164-4520-8c97-a71036644f86
 
 
 ### Setting Alarms and Receiving Push Notifications
-
+https://github.com/user-attachments/assets/c68c6c01-98f6-4604-9a9c-460b2648f5e5
 
 ## Deployment
 
